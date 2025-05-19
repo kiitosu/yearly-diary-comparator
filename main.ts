@@ -1,4 +1,4 @@
-import { Plugin, WorkspaceLeaf, ItemView } from 'obsidian';
+import { Plugin, WorkspaceLeaf, ItemView, TFile } from 'obsidian';
 
 /**
  * 年度ごとに日記を比較表示するObsidianプラグイン
@@ -225,8 +225,21 @@ class YearlyDiaryCompareView extends ItemView {
 			for (const year of yearList) {
 				const dateStr = `${year}-${mmdd}`;
 				const filePath = yearDiaryMap[year][dateStr];
-				console.log("描画デバッグ:", { year, dateStr, filePath });
-				row.createEl("td", { text: filePath ?? "" });
+				const cell = row.createEl("td", { text: "" });
+				if (filePath) {
+					cell.setText("読み込み中...");
+					const file = this.plugin.app.vault.getAbstractFileByPath(filePath);
+					// TFile型のみ読み込み
+					if (file && file instanceof TFile) {
+						this.plugin.app.vault.read(file).then(content => {
+							cell.setText(content);
+						}).catch(() => {
+							cell.setText("(読み込み失敗)");
+						});
+					} else {
+						cell.setText("(ファイルなし)");
+					}
+				}
 			}
 		}
 	}
