@@ -201,10 +201,10 @@ class YearlyDiaryCompareView extends ItemView {
 
 		// テーブルを横スクロール可能なラッパーで囲む
 		const tableWrapper = container.createEl("div");
-		tableWrapper.setAttr("style", "overflow-x: auto;");
+		tableWrapper.setAttr("style", "overflow-x: auto; overflow-y: auto; height: 100%; min-height: 100%;");
 		const yearColCount = yearList.length;
 		const dateColWidth = 56;
-		const yearColWidth = 960;
+		const yearColWidth = 480;
 		const minTableWidth = dateColWidth + yearColWidth * yearColCount;
 		const table = tableWrapper.createEl("table");
 		table.setAttr("style", `border-collapse: collapse; min-width: ${minTableWidth}px; table-layout: fixed;`);
@@ -214,8 +214,8 @@ class YearlyDiaryCompareView extends ItemView {
 
 		const plugin = this.plugin;
 		const renderTable = () => {
-			const thStyle = `border: 1px solid #888; padding: 4px; background: #222; width: ${dateColWidth}px; min-width: ${dateColWidth}px; max-width: ${dateColWidth}px; white-space: nowrap; color: #fff; position: sticky; left: 0; z-index: 2;`;
-			const thYearStyle = `border: 1px solid #888; padding: 4px; background: #f0f0f0; width: ${yearColWidth}px; min-width: ${yearColWidth}px; max-width: ${yearColWidth}px; color: #000;`;
+			const thStyle = `border: 1px solid #888; padding: 4px; background: #222; width: ${dateColWidth}px; min-width: ${dateColWidth}px; max-width: ${dateColWidth}px; white-space: nowrap; color: #fff; position: sticky; left: 0; top: 0; z-index: 11;`;
+			const thYearStyle = `border: 1px solid #888; padding: 4px; background: #f0f0f0; width: ${yearColWidth}px; min-width: ${yearColWidth}px; max-width: ${yearColWidth}px; color: #000; position: sticky; top: 0; z-index: 10;`;
 
 			thead.empty();
 			const headerRow = thead.createEl("tr");
@@ -292,6 +292,10 @@ class YearlyDiaryCompareView extends ItemView {
 		};
 
 		renderTable();
+		// 最新の年が右端に来るように自動スクロール（遅延実行で確実に反映）
+		setTimeout(() => {
+			tableWrapper.scrollLeft = tableWrapper.scrollWidth;
+		}, 0);
 		window.addEventListener("resize", renderTable);
 		this._renderTableHandler = renderTable;
 	}
