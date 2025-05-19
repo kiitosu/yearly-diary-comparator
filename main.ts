@@ -7,6 +7,16 @@ const VIEW_TYPE_YEARLY_DIARY_COMPARE = "yearly-diary-compare-view";
 
 export default class YearlyDiaryComparatorPlugin extends Plugin {
 	async onload() {
+		// 左リボンに年度比較リスト表示ボタンを追加
+		this.addRibbonIcon('columns-3', '年度別比較リスト表示', () => {
+			const leaves = this.app.workspace.getLeavesOfType(VIEW_TYPE_YEARLY_DIARY_COMPARE);
+			if (leaves.length > 0) {
+				leaves[0].detach();
+			} else {
+				this.activateView();
+			}
+		});
+
 		// コマンド追加: 年度比較ビューを開く
 		this.addCommand({
 			id: "open-yearly-diary-compare-view",
@@ -195,7 +205,7 @@ class YearlyDiaryCompareView extends ItemView {
 	async onOpen() {
 		const container = this.containerEl.children[1];
 		container.empty();
-		container.createEl("h2", { text: "年度比較ビュー（仮）" });
+		container.createEl("h2", { text: "年度比較ビュー" });
 		const yearDiaryMap = await this.plugin.getYearDiaryMap();
 		const yearList = Object.keys(yearDiaryMap).sort();
 
