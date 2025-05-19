@@ -4,15 +4,57 @@ import {
 	ItemView,
 	TFile,
 	MarkdownRenderer,
+	App,
+	PluginSettingTab,
+	Setting,
 } from "obsidian";
+
+// プラグイン設定タブ
+class YearlyDiaryComparatorSettingTab extends PluginSettingTab {
+	plugin: YearlyDiaryComparatorPlugin;
+
+	constructor(app: App, plugin: YearlyDiaryComparatorPlugin) {
+		super(app, plugin);
+		this.plugin = plugin;
+	}
+
+	display(): void {
+		const { containerEl } = this;
+		containerEl.empty();
+
+		containerEl.createEl("h2", { text: "年度比較プラグインの設定" });
+
+		new Setting(containerEl)
+			.setName("抜粋見出し名")
+			.setDesc("抜粋として表示する見出し名（例: [DAILY_SUMMARY]）")
+			.addText(text => text
+				.setPlaceholder("[DAILY_SUMMARY]")
+				.setValue(this.plugin.settings.summaryHeading)
+				.onChange(async (value) => {
+					this.plugin.settings.summaryHeading = value || "[DAILY_SUMMARY]";
+					await this.plugin.saveSettings();
+				}));
+	}
+}
 
 /**
  * 年度ごとに日記を比較表示するObsidianプラグイン
  */
 const VIEW_TYPE_YEARLY_DIARY_COMPARE = "yearly-diary-compare-view";
 
+interface YearlyDiaryComparatorSettings {
+	summaryHeading: string;
+}
+
+const DEFAULT_SETTINGS: YearlyDiaryComparatorSettings = {
+	summaryHeading: "[DAILY_SUMMARY]",
+};
+
 export default class YearlyDiaryComparatorPlugin extends Plugin {
+	settings: YearlyDiaryComparatorSettings;
 	async onload() {
+		await this.loadSettings();
+		this.addSettingTab(new YearlyDiaryComparatorSettingTab(this.app, this));
 		// 左リボンに年度比較リスト表示ボタンを追加
 		this.addRibbonIcon("columns-3", "年度別比較リスト表示", () => {
 			const leaves = this.app.workspace.getLeavesOfType(
@@ -66,6 +108,14 @@ export default class YearlyDiaryComparatorPlugin extends Plugin {
 
 	onunload() {
 		// クリーンアップ処理（必要に応じて実装）
+	}
+
+	async loadSettings() {
+		this.settings = Object.assign({}, DEFAULT_SETTINGS, await this.loadData());
+	}
+
+	async saveSettings() {
+		await this.saveData(this.settings);
 	}
 
 	/**
@@ -356,10 +406,12 @@ class YearlyDiaryCompareView extends ItemView {
 							this.plugin.app.vault
 								.read(file)
 								.then((content) => {
-									// # [DAILY_SUMMARY]見出し以降、次の同レベル以上の見出しまでを抽出
+									// # headingPattern 見出し以降、次の同レベル以上の見出しまでを抽出
 									const lines = content.split("\n");
+									const headingPattern = this.plugin.settings.summaryHeading.trim();
+									const headingRegex = new RegExp("^#+\\s*" + headingPattern.replace(/[-\/\\^$*+?.()|[\]{}]/g, '\\$&'));
 									const summaryIdx = lines.findIndex((line) =>
-										/^#+\s*\[DAILY_SUMMARY\]/.test(line)
+										headingRegex.test(line)
 									);
 									if (summaryIdx !== -1) {
 										const summaryLevel = (lines[
