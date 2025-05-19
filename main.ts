@@ -177,6 +177,7 @@ export default class YearlyDiaryComparatorPlugin extends Plugin {
 // 年度比較用カスタムビュー
 class YearlyDiaryCompareView extends ItemView {
 	plugin: YearlyDiaryComparatorPlugin;
+	_renderTableHandler: (() => void) | null = null;
 
 	constructor(leaf: WorkspaceLeaf, plugin: YearlyDiaryComparatorPlugin) {
 		super(leaf);
@@ -194,57 +195,80 @@ class YearlyDiaryCompareView extends ItemView {
 	async onOpen() {
 		const container = this.containerEl.children[1];
 		container.empty();
-		const header = container.createEl("h2", { text: "年度比較ビュー（仮）" });
+		container.createEl("h2", { text: "年度比較ビュー（仮）" });
 		const yearDiaryMap = await this.plugin.getYearDiaryMap();
 		const yearList = Object.keys(yearDiaryMap).sort();
 
-		const table = container.createEl("table");
+		// テーブルを横スクロール可能なラッパーで囲む
+		const tableWrapper = container.createEl("div");
+		tableWrapper.setAttr("style", "overflow-x: auto;");
+		const yearColCount = yearList.length;
+		const dateColWidth = 56;
+		const yearColWidth = 960;
+		const minTableWidth = dateColWidth + yearColWidth * yearColCount;
+		const table = tableWrapper.createEl("table");
+		table.setAttr("style", `border-collapse: collapse; min-width: ${minTableWidth}px; table-layout: fixed;`);
 		const thead = table.createEl("thead");
 		const headerRow = thead.createEl("tr");
-		headerRow.createEl("th", { text: "日付" });
-		for (const year of yearList) {
-			headerRow.createEl("th", { text: year });
-		}
 		const tbody = table.createEl("tbody");
-		// 全年度の全日付（1月1日〜12月31日）を網羅したdays配列を生成
-		const days: string[] = [];
-		for (let month = 0; month < 12; month++) {
-			for (let day = 1; day <= 31; day++) {
-				const mm = String(month + 1).padStart(2, "0");
-				const dd = String(day).padStart(2, "0");
-				const dateStr = `XXXX-${mm}-${dd}`;
-				// 2月30日や4月31日など存在しない日付を除外
-				if (new Date(`2020-${mm}-${dd}`).getMonth() + 1 !== month + 1) continue;
-				days.push(`${mm}-${dd}`);
-			}
-		}
-		// 年ごとにdaysをループし、テーブルを描画
-		for (const mmdd of days) {
-			const row = tbody.createEl("tr");
-			row.createEl("td", { text: mmdd });
+
+		const renderTable = () => {
+			const thStyle = `border: 1px solid #888; padding: 4px; background: #222; width: ${dateColWidth}px; min-width: ${dateColWidth}px; max-width: ${dateColWidth}px; white-space: nowrap; color: #fff; position: sticky; left: 0; z-index: 2;`;
+			const thYearStyle = `border: 1px solid #888; padding: 4px; background: #f0f0f0; width: ${yearColWidth}px; min-width: ${yearColWidth}px; max-width: ${yearColWidth}px; color: #000;`;
+
+			thead.empty();
+			const headerRow = thead.createEl("tr");
+			headerRow.createEl("th", { text: "日付", attr: { style: thStyle } });
 			for (const year of yearList) {
-				const dateStr = `${year}-${mmdd}`;
-				const filePath = yearDiaryMap[year][dateStr];
-				const cell = row.createEl("td", { text: "" });
-				if (filePath) {
-					cell.setText("読み込み中...");
-					const file = this.plugin.app.vault.getAbstractFileByPath(filePath);
-					// TFile型のみ読み込み
-					if (file && file instanceof TFile) {
-						this.plugin.app.vault.read(file).then(content => {
-							cell.setText(content);
-						}).catch(() => {
-							cell.setText("(読み込み失敗)");
-						});
-					} else {
-						cell.setText("(ファイルなし)");
+				headerRow.createEl("th", { text: year, attr: { style: thYearStyle } });
+			}
+
+			tbody.empty();
+			const days: string[] = [];
+			for (let month = 0; month < 12; month++) {
+				for (let day = 1; day <= 31; day++) {
+					const mm = String(month + 1).padStart(2, "0");
+					const dd = String(day).padStart(2, "0");
+					const dateStr = `XXXX-${mm}-${dd}`;
+					if (new Date(`2020-${mm}-${dd}`).getMonth() + 1 !== month + 1) continue;
+					days.push(`${mm}-${dd}`);
+				}
+			}
+			for (const mmdd of days) {
+				const row = tbody.createEl("tr");
+				const tdStyle = `border: 1px solid #888; padding: 4px; width: ${dateColWidth}px; min-width: ${dateColWidth}px; max-width: ${dateColWidth}px; white-space: nowrap; position: sticky; left: 0; z-index: 1; background: #222; color: #fff;`;
+				const tdYearStyle = `border: 1px solid #888; padding: 4px; width: ${yearColWidth}px; min-width: ${yearColWidth}px; max-width: ${yearColWidth}px;`;
+				row.createEl("td", { text: mmdd, attr: { style: tdStyle } });
+				for (const year of yearList) {
+					const dateStr = `${year}-${mmdd}`;
+					const filePath = yearDiaryMap[year][dateStr];
+					const cell = row.createEl("td", { text: "", attr: { style: tdYearStyle } });
+					if (filePath) {
+						cell.setText("読み込み中...");
+						const file = this.plugin.app.vault.getAbstractFileByPath(filePath);
+						if (file && file instanceof TFile) {
+							this.plugin.app.vault.read(file).then(content => {
+								cell.setText(content);
+							}).catch(() => {
+								cell.setText("(読み込み失敗)");
+							});
+						} else {
+							cell.setText("(ファイルなし)");
+						}
 					}
 				}
 			}
-		}
+		};
+
+		renderTable();
+		window.addEventListener("resize", renderTable);
+		this._renderTableHandler = renderTable;
 	}
 
 	async onClose() {
-		// クリーンアップ処理（必要に応じて）
+		// クリーンアップ処理
+		if (this._renderTableHandler) {
+			window.removeEventListener("resize", this._renderTableHandler);
+		}
 	}
 }
