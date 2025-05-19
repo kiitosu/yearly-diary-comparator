@@ -206,12 +206,26 @@ class YearlyDiaryCompareView extends ItemView {
 			headerRow.createEl("th", { text: year });
 		}
 		const tbody = table.createEl("tbody");
-		const days = Object.keys(yearDiaryMap[yearList[0]] || {});
-		for (const dateStr of days) {
+		// 全年度の全日付（1月1日〜12月31日）を網羅したdays配列を生成
+		const days: string[] = [];
+		for (let month = 0; month < 12; month++) {
+			for (let day = 1; day <= 31; day++) {
+				const mm = String(month + 1).padStart(2, "0");
+				const dd = String(day).padStart(2, "0");
+				const dateStr = `XXXX-${mm}-${dd}`;
+				// 2月30日や4月31日など存在しない日付を除外
+				if (new Date(`2020-${mm}-${dd}`).getMonth() + 1 !== month + 1) continue;
+				days.push(`${mm}-${dd}`);
+			}
+		}
+		// 年ごとにdaysをループし、テーブルを描画
+		for (const mmdd of days) {
 			const row = tbody.createEl("tr");
-			row.createEl("td", { text: dateStr });
+			row.createEl("td", { text: mmdd });
 			for (const year of yearList) {
+				const dateStr = `${year}-${mmdd}`;
 				const filePath = yearDiaryMap[year][dateStr];
+				console.log("描画デバッグ:", { year, dateStr, filePath });
 				row.createEl("td", { text: filePath ?? "" });
 			}
 		}
