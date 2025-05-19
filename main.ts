@@ -1,4 +1,4 @@
-import { Plugin, WorkspaceLeaf, ItemView, TFile } from 'obsidian';
+import { Plugin, WorkspaceLeaf, ItemView, TFile, MarkdownRenderer } from 'obsidian';
 
 /**
  * 年度ごとに日記を比較表示するObsidianプラグイン
@@ -212,6 +212,7 @@ class YearlyDiaryCompareView extends ItemView {
 		const headerRow = thead.createEl("tr");
 		const tbody = table.createEl("tbody");
 
+		const plugin = this.plugin;
 		const renderTable = () => {
 			const thStyle = `border: 1px solid #888; padding: 4px; background: #222; width: ${dateColWidth}px; min-width: ${dateColWidth}px; max-width: ${dateColWidth}px; white-space: nowrap; color: #fff; position: sticky; left: 0; z-index: 2;`;
 			const thYearStyle = `border: 1px solid #888; padding: 4px; background: #f0f0f0; width: ${yearColWidth}px; min-width: ${yearColWidth}px; max-width: ${yearColWidth}px; color: #000;`;
@@ -247,11 +248,41 @@ class YearlyDiaryCompareView extends ItemView {
 						cell.setText("読み込み中...");
 						const file = this.plugin.app.vault.getAbstractFileByPath(filePath);
 						if (file && file instanceof TFile) {
-							this.plugin.app.vault.read(file).then(content => {
-								cell.setText(content);
-							}).catch(() => {
-								cell.setText("(読み込み失敗)");
-							});
+						this.plugin.app.vault.read(file).then(content => {
+							// # [DAILY_SUMMARY]見出し以降、次の同レベル以上の見出しまでを抽出
+							const lines = content.split('\n');
+							const summaryIdx = lines.findIndex(line => /^#+\s*\[DAILY_SUMMARY\]/.test(line));
+							if (summaryIdx !== -1) {
+								const summaryLevel = (lines[summaryIdx].match(/^#+/) || ['#'])[0].length;
+								let endIdx = lines.length;
+								for (let i = summaryIdx + 1; i < lines.length; i++) {
+									const m = lines[i].match(/^(#+)\s+/);
+									if (m && m[1].length <= summaryLevel) {
+										endIdx = i;
+										break;
+									}
+								}
+								const summary = lines.slice(summaryIdx + 1, endIdx).join('\n').trim();
+								if (summary) {
+									// 先に中身をクリア
+									cell.innerHTML = "";
+									// ObsidianのMarkdownRendererでマークダウンをHTMLに変換して表示
+									MarkdownRenderer.renderMarkdown(
+										summary,
+										cell,
+										"",
+										plugin
+									);
+								} else {
+									cell.setText("(まとめなし)");
+								}
+							} else {
+								cell.setText("");
+							}
+						}).catch((err) => {
+							console.error("Markdown render error:", err);
+							cell.setText("(読み込み失敗)");
+						});
 						} else {
 							cell.setText("(ファイルなし)");
 						}
