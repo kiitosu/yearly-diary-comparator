@@ -556,6 +556,12 @@ class YearlyDiaryCompareView extends ItemView {
 		// クリーンアップ処理
 		if (this._renderTableHandler) {
 			window.removeEventListener("resize", this._renderTableHandler);
+			this._renderTableHandler = null;
+		}
+		// DOMノードのクリーンアップ
+		const container = this.containerEl.children[1];
+		if (container) {
+			container.empty();
 		}
 	}
 }
