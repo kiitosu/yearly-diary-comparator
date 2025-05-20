@@ -278,8 +278,32 @@ class YearlyDiaryCompareView extends ItemView {
 		const plugin = this.plugin;
 		const renderTable = () => {
 			// styles are hard coded because I can not make header sticky without hard coded styles.
-			const thStyle = `border: 1px solid #888; padding: 4px; background: #222; width: ${dateColWidth}px; min-width: ${dateColWidth}px; max-width: ${dateColWidth}px; white-space: nowrap; color: #fff; position: sticky; left: 0; top: 0; z-index: 11;`;
-			const thYearStyle = `border: 1px solid #888; padding: 4px; background: #f0f0f0; width: ${yearColWidth}px; min-width: ${yearColWidth}px; max-width: ${yearColWidth}px; color: #000; position: sticky; top: 0; z-index: 10;`;
+			const thStyle = `
+				border: 1px solid var(--background-modifier-border);
+				padding: 4px;
+				background: var(--background-secondary);
+				width: ${dateColWidth}px;
+				min-width: ${dateColWidth}px;
+				max-width: ${dateColWidth}px;
+				white-space: nowrap;
+				color: var(--text-normal);
+				position: sticky;
+				left: 0;
+				top: 0;
+				z-index: 11;
+			`;
+			const thYearStyle = `
+				border: 1px solid var(--background-modifier-border);
+				padding: 4px;
+				background: var(--background-primary);
+				width: ${yearColWidth}px;
+				min-width: ${yearColWidth}px;
+				max-width: ${yearColWidth}px;
+				color: var(--text-normal);
+				position: sticky;
+				top: 0;
+				z-index: 10;
+			`;
 
 			thead.empty();
 			const headerRow = thead.createEl("tr");
@@ -311,8 +335,28 @@ class YearlyDiaryCompareView extends ItemView {
 			}
 			for (const mmdd of days) {
 				const row = tbody.createEl("tr");
-				const tdStyle = `border: 1px solid #888; padding: 4px; width: ${dateColWidth}px; min-width: ${dateColWidth}px; max-width: ${dateColWidth}px; white-space: nowrap; position: sticky; left: 0; z-index: 1; background: #222; color: #fff;`;
-				const tdYearStyle = `border: 1px solid #888; padding: 4px; width: ${yearColWidth}px; min-width: ${yearColWidth}px; max-width: ${yearColWidth}px;`;
+				const tdStyle = `
+					border: 1px solid var(--background-modifier-border);
+					padding: 4px;
+					width: ${dateColWidth}px;
+					min-width: ${dateColWidth}px;
+					max-width: ${dateColWidth}px;
+					white-space: nowrap;
+					position: sticky;
+					left: 0;
+					z-index: 1;
+					background: var(--background-secondary);
+					color: var(--text-normal);
+				`;
+				const tdYearStyle = `
+					border: 1px solid var(--background-modifier-border);
+					padding: 4px;
+					width: ${yearColWidth}px;
+					min-width: ${yearColWidth}px;
+					max-width: ${yearColWidth}px;
+					background: var(--background-primary);
+					color: var(--text-normal);
+				`;
 				row.createEl("td", { text: mmdd, attr: { style: tdStyle } });
 				for (const year of yearList) {
 					const dateStr = `${year}-${mmdd}`;
