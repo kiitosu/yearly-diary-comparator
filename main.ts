@@ -403,9 +403,9 @@ class YearlyDiaryCompareView extends ItemView {
 						cell.style.cursor = "pointer";
 						const file = this.plugin.app.vault.getFileByPath(filePath);
 						if (file) {
-							this.plugin.app.vault
-								.read(file)
-								.then((content) => {
+							(async () => {
+								try {
+									const content = await this.plugin.app.vault.read(file);
 									// # headingPattern 見出し以降、次の同レベル以上の見出しまでを抽出
 									const lines = content.split("\n");
 									const headingPattern = this.plugin.settings.summaryHeading.trim();
@@ -487,14 +487,14 @@ class YearlyDiaryCompareView extends ItemView {
 										});
 										cell.appendChild(iconSpan);
 									}
-								})
-								.catch((err) => {
+								} catch (err) {
 									console.error(
 										"Markdown render error:",
 										err
 									);
-									cell.setText("(read errir)");
-								});
+									cell.setText("(read error)");
+								}
+							})();
 						} else {
 							cell.setText("(no file found)");
 						}
