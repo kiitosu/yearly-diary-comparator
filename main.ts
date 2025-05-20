@@ -439,7 +439,7 @@ class YearlyDiaryCompareView extends ItemView {
 											.slice(summaryIdx + 1, endIdx)
 											.join("\n")
 											.trim();
-										cell.innerHTML = "";
+										cell.empty();
 										const iconSpan = document.createElement("span");
 										iconSpan.textContent = "📄";
 										iconSpan.style.cursor = "pointer";
@@ -470,7 +470,7 @@ class YearlyDiaryCompareView extends ItemView {
 											cell.appendChild(noneSpan);
 										}
 									} else {
-										cell.innerHTML = "";
+										cell.empty();
 										const iconSpan = document.createElement("span");
 										iconSpan.textContent = "📄";
 										iconSpan.style.cursor = "pointer";
