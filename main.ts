@@ -168,6 +168,12 @@ export default class YearlyDiaryComparatorPlugin extends Plugin {
 			);
 		}
 
+		// console.log("Daily Note Folder:", dailyNoteFolder ?? "(Vault root)");
+		// console.log(
+		// 	"Daily Note Files:",
+		// 	dailyNoteFiles.map((f) => f.path)
+		// );
+
 		const yearSet = new Set<string>();
 		const yearRegex = /^(\d{4})-\d{2}-\d{2}$/;
 		const pathYearRegex = /(\d{4})-\d{2}-\d{2}\.md$/;
@@ -206,84 +212,6 @@ export default class YearlyDiaryComparatorPlugin extends Plugin {
 			yearDiaryMap[year] = dateMap;
 		}
 		return yearDiaryMap;
-	}
-
-	/**
-	 * daily noteディレクトリのパスとファイル一覧を取得し、コンソールに出力
-	 */
-	async logDailyNoteFiles() {
-		// Obsidianの「日記」コアプラグインの設定からdaily noteフォルダのパスを取得
-		let dailyNoteFolder: string | undefined = undefined;
-		const dailyNotesPlugin = (this.app as any).plugins?.getPlugin?.(
-			"daily-notes"
-		);
-
-		if (
-			dailyNotesPlugin &&
-			typeof dailyNotesPlugin?.options?.folder === "string"
-		) {
-			dailyNoteFolder = dailyNotesPlugin.options.folder;
-		} else {
-			// plugins.getPluginで取得できない場合はinternalPlugins経由で取得を試みる
-			const internalDailyNotes = (this.app as any).internalPlugins
-				?.plugins?.["daily-notes"];
-			if (
-				internalDailyNotes &&
-				internalDailyNotes?.instance?.options?.folder !== undefined
-			) {
-				dailyNoteFolder = internalDailyNotes.instance.options.folder;
-			}
-		}
-		const files = this.app.vault.getFiles();
-		let dailyNoteFiles;
-		if (!dailyNoteFolder) {
-			// フォルダ設定が空の場合はVaultルート直下を対象
-			dailyNoteFiles = files.filter((file) => !file.path.includes("/"));
-		} else {
-			// フォルダが指定されている場合はその配下を対象
-			dailyNoteFiles = files.filter((file) =>
-				file.path.startsWith(dailyNoteFolder + "/")
-			);
-		}
-
-		// 年度リストの自動生成（file.basename, file.path両方で抽出を試みる）
-		const yearSet = new Set<string>();
-		const yearRegex = /^(\d{4})-\d{2}-\d{2}$/;
-		const pathYearRegex = /(\d{4})-\d{2}-\d{2}\.md$/;
-		for (const file of dailyNoteFiles) {
-			const baseMatch = file.basename.match(yearRegex);
-			const pathMatch = file.path.match(pathYearRegex);
-			if (baseMatch) {
-				yearSet.add(baseMatch[1]);
-			} else if (pathMatch) {
-				yearSet.add(pathMatch[1]);
-			}
-		}
-		const yearList = Array.from(yearSet).sort();
-
-		// 年度ごとの日記データ構造生成
-		const yearDiaryMap: Record<
-			string,
-			Record<string, string | undefined>
-		> = {};
-		for (const year of yearList) {
-			const dateMap: Record<string, string | undefined> = {};
-			const startDate = new Date(Number(year), 0, 1);
-			const endDate = new Date(Number(year), 11, 31);
-			for (
-				let d = new Date(startDate);
-				d <= endDate;
-				d.setDate(d.getDate() + 1)
-			) {
-				const mm = String(d.getMonth() + 1).padStart(2, "0");
-				const dd = String(d.getDate()).padStart(2, "0");
-				const dateStr = `${year}-${mm}-${dd}`;
-				// ファイルが存在するか検索
-				const file = dailyNoteFiles.find((f) => f.basename === dateStr);
-				dateMap[dateStr] = file ? file.path : undefined;
-			}
-			yearDiaryMap[year] = dateMap;
-		}
 	}
 }
 
@@ -349,7 +277,7 @@ class YearlyDiaryCompareView extends ItemView {
 
 		const plugin = this.plugin;
 		const renderTable = () => {
-            // styles are hard coded because I can not make header sticky without hard coded styles.
+			// styles are hard coded because I can not make header sticky without hard coded styles.
 			const thStyle = `border: 1px solid #888; padding: 4px; background: #222; width: ${dateColWidth}px; min-width: ${dateColWidth}px; max-width: ${dateColWidth}px; white-space: nowrap; color: #fff; position: sticky; left: 0; top: 0; z-index: 11;`;
 			const thYearStyle = `border: 1px solid #888; padding: 4px; background: #f0f0f0; width: ${yearColWidth}px; min-width: ${yearColWidth}px; max-width: ${yearColWidth}px; color: #000; position: sticky; top: 0; z-index: 10;`;
 
@@ -464,7 +392,6 @@ class YearlyDiaryCompareView extends ItemView {
 											);
 										} else {
 											const noneSpan = document.createElement("span");
-											noneSpan.textContent = "(no summary)";
 											cell.appendChild(noneSpan);
 										}
 									} else {
