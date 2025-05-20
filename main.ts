@@ -33,26 +33,34 @@ class YearlyDiaryComparatorSettingTab extends PluginSettingTab {
 
 		new Setting(containerEl)
 			.setName("Extract keyword")
-			.setDesc("Heading keyword to extract data from（eg, [DAILY_SUMMARY]）")
-			.addText(text => text
-				.setPlaceholder("[DAILY_SUMMARY]")
-				.setValue(this.plugin.settings.summaryHeading)
-				.onChange(async (value) => {
-					this.plugin.settings.summaryHeading = value || "[DAILY_SUMMARY]";
-					await this.plugin.saveSettings();
-				}));
+			.setDesc(
+				"Heading keyword to extract data from（eg, [DAILY_SUMMARY]）"
+			)
+			.addText((text) =>
+				text
+					.setPlaceholder("[DAILY_SUMMARY]")
+					.setValue(this.plugin.settings.summaryHeading)
+					.onChange(async (value) => {
+						this.plugin.settings.summaryHeading =
+							value || "[DAILY_SUMMARY]";
+						await this.plugin.saveSettings();
+					})
+			);
 
 		new Setting(containerEl)
 			.setName("Width of year columns")
 			.setDesc("Width of year columns (eg. 480)")
-			.addText(text => text
-				.setPlaceholder("480")
-				.setValue(String(this.plugin.settings.yearColWidth))
-				.onChange(async (value) => {
-					const num = Number(value);
-					this.plugin.settings.yearColWidth = (!isNaN(num) && num > 0) ? num : 480;
-					await this.plugin.saveSettings();
-				}));
+			.addText((text) =>
+				text
+					.setPlaceholder("480")
+					.setValue(String(this.plugin.settings.yearColWidth))
+					.onChange(async (value) => {
+						const num = Number(value);
+						this.plugin.settings.yearColWidth =
+							!isNaN(num) && num > 0 ? num : 480;
+						await this.plugin.saveSettings();
+					})
+			);
 	}
 }
 
@@ -114,7 +122,11 @@ export default class YearlyDiaryComparatorPlugin extends Plugin {
 	}
 
 	async loadSettings() {
-		this.settings = Object.assign({}, DEFAULT_SETTINGS, await this.loadData());
+		this.settings = Object.assign(
+			{},
+			DEFAULT_SETTINGS,
+			await this.loadData()
+		);
 	}
 
 	async saveSettings() {
@@ -148,7 +160,7 @@ export default class YearlyDiaryComparatorPlugin extends Plugin {
 			}
 		}
 
-        // Get files in specified folder
+		// Get files in specified folder
 		const files = this.app.vault.getFiles();
 		let dailyNoteFiles: any[];
 		if (!dailyNoteFolder) {
@@ -211,7 +223,7 @@ export default class YearlyDiaryComparatorPlugin extends Plugin {
 // View to show comparison of diary
 class YearlyDiaryCompareView extends ItemView {
 	plugin: YearlyDiaryComparatorPlugin;
-    // keep function to cleanup
+	// keep function to cleanup
 	_renderTableHandler: (() => void) | null = null;
 
 	constructor(leaf: WorkspaceLeaf, plugin: YearlyDiaryComparatorPlugin) {
@@ -227,29 +239,37 @@ class YearlyDiaryCompareView extends ItemView {
 		return "Yearly diary comparator";
 	}
 
-
-    private showDailyNote = (app:App, filePath:string) =>{
-        const file = app.vault.getFileByPath(filePath);
-            if (file) {
-            const centerLeaf = this.plugin.app.workspace.getLeaf(false);
-            if (centerLeaf) {
-                centerLeaf.openFile(file, {
-                    active: true,
-                });
-                app.workspace.revealLeaf(centerLeaf);
-            }
-        }
-    }
+	private showDailyNote = (app: App, filePath: string) => {
+		const file = app.vault.getFileByPath(filePath);
+		if (file) {
+			const centerLeaf = this.plugin.app.workspace.getLeaf(false);
+			if (centerLeaf) {
+				centerLeaf.openFile(file, {
+					active: true,
+				});
+				app.workspace.revealLeaf(centerLeaf);
+			}
+		}
+	};
 
 	async onOpen() {
 		const container = this.containerEl.children[1];
 		container.empty();
 
-        // Define title of view
-		const titleWrapper = container.createEl("div", { attr: { style: "display: flex; align-items: center; gap: 8px;" } });
-		titleWrapper.createEl("h2", { text: "Yearly diary comparator", attr: { style: "margin: 0;" } });
-        // Add reload button to title
-		const reloadBtn = titleWrapper.createEl("button", { attr: { style: "display: flex; align-items: center; justify-content: center; width: 40px; height: 40px; cursor: pointer; border: none; background: transparent; padding: 0; margin-left: 4px;" } });
+		// Define title of view
+		const titleWrapper = container.createEl("div", {
+			attr: { style: "display: flex; align-items: center; gap: 8px;" },
+		});
+		titleWrapper.createEl("h2", {
+			text: "Yearly diary comparator",
+			attr: { style: "margin: 0;" },
+		});
+		// Add reload button to title
+		const reloadBtn = titleWrapper.createEl("button", {
+			attr: {
+				style: "display: flex; align-items: center; justify-content: center; width: 40px; height: 40px; cursor: pointer; border: none; background: transparent; padding: 0; margin-left: 4px;",
+			},
+		});
 		reloadBtn.title = "Reload table";
 		const iconSpan = document.createElement("span");
 		iconSpan.textContent = "⟳";
@@ -258,7 +278,7 @@ class YearlyDiaryCompareView extends ItemView {
 		iconSpan.title = "reload table";
 		reloadBtn.appendChild(iconSpan);
 
-        const yearDiaryMap = await this.plugin.getYearDiaryMap();
+		const yearDiaryMap = await this.plugin.getYearDiaryMap();
 		const yearList = Object.keys(yearDiaryMap).sort();
 
 		// Wrap table with scrollable
@@ -287,10 +307,7 @@ class YearlyDiaryCompareView extends ItemView {
 				const mm = String(month + 1).padStart(2, "0");
 				const dd = String(day).padStart(2, "0");
 				const dateStr = `XXXX-${mm}-${dd}`;
-				if (
-					new Date(`2020-${mm}-${dd}`).getMonth() + 1 !==
-					month + 1
-				)
+				if (new Date(`2020-${mm}-${dd}`).getMonth() + 1 !== month + 1)
 					continue;
 				days.push(`${mm}-${dd}`);
 			}
@@ -299,56 +316,52 @@ class YearlyDiaryCompareView extends ItemView {
 		const plugin = this.plugin;
 		const renderTable = () => {
 			// styles are hard coded because I can not make header sticky without hard coded styles.
-            const zIndexTableHeaderDay = 11;
-            const zIndexTableHeaderYear = 10;
-            const zIndexTableDataDay = 1;
+			const zIndexTableHeaderDay = 11;
+			const zIndexTableHeaderYear = 10;
+			const zIndexTableDataDay = 1;
 
-            const baseStyle = [
+			const baseStyle = [
 				`border: 1px solid var(--background-modifier-border)`,
 				`padding: 4px`,
-                `color: var(--text-normal)`
-            ];
-            const dayWidthStyle = [
-                `width: ${dayColWidth}px`,
+				`color: var(--text-normal)`,
+			];
+			const dayWidthStyle = [
+				`width: ${dayColWidth}px`,
 				`min-width: ${dayColWidth}px`,
 				`max-width: ${dayColWidth}px`,
-                `white-space: nowrap`,
-                "background: var(--background-secondary)"
-            ]
-            const yearWidthStyle = [
-                `width: ${yearColWidth}px`,
+				`white-space: nowrap`,
+				"background: var(--background-secondary)",
+			];
+			const yearWidthStyle = [
+				`width: ${yearColWidth}px`,
 				`min-width: ${yearColWidth}px`,
 				`max-width: ${yearColWidth}px`,
-                `background: var(--background-primary)`,
-            ]
-            const hiLightStyle = [
-                "background: var(--color-accent)",
-                "color: var(--background-primary)",
-                "font-weight: bold"
-            ];
+				`background: var(--background-primary)`,
+			];
+			const hiLightStyle = [
+				"background: var(--color-accent)",
+				"color: var(--background-primary)",
+				"font-weight: bold",
+			];
 
-            const thDayStyle = [
-                ...baseStyle,
-                ...dayWidthStyle,
+			const thDayStyle = [
+				...baseStyle,
+				...dayWidthStyle,
 				`position: sticky`,
 				`left: 0`,
 				`top: 0`,
 				`z-index: ${zIndexTableHeaderDay}`,
-            ].join(";");
+			].join(";");
 
 			const thYearStyle = [
-                ...baseStyle,
-                ...yearWidthStyle,
+				...baseStyle,
+				...yearWidthStyle,
 				`position: sticky`,
 				`top: 0`,
 				`z-index: ${zIndexTableHeaderYear}`,
-            ].join(";");
+			].join(";");
 
-            const tdYearStyle = [
-                ...baseStyle,
-                ...yearWidthStyle,
-            ].join(";");
-
+			const tdYearStyle = [...baseStyle, ...yearWidthStyle].join(";");
 
 			thead.empty();
 			const headerRow = thead.createEl("tr");
@@ -379,55 +392,64 @@ class YearlyDiaryCompareView extends ItemView {
 				}
 			}
 			const today = new Date();
-			const todayStr = `${String(today.getMonth() + 1).padStart(2, "0")}-${String(today.getDate()).padStart(2, "0")}`;
+			const todayStr = `${String(today.getMonth() + 1).padStart(
+				2,
+				"0"
+			)}-${String(today.getDate()).padStart(2, "0")}`;
 
-            // Create cell for 366 days
+			// Create cell for 366 days
 			for (const mmdd of days) {
-                // Define tdDayStyle dynamically
+				// Define tdDayStyle dynamically
 				const styles = [
-                    ...baseStyle,
-                    ...dayWidthStyle,
+					...baseStyle,
+					...dayWidthStyle,
 					`position: sticky`,
 					`left: 0`,
 					`z-index: ${zIndexTableDataDay}`,
-                ];
+				];
 				// hi-light today
 				if (mmdd === todayStr) {
-                    styles.push(...hiLightStyle)
+					styles.push(...hiLightStyle);
 				}
-                const tdDayStyle = styles.join(";")
+				const tdDayStyle = styles.join(";");
 
-                // Create cells for years
+				// Create cells for years
 				const row = tbody.createEl("tr");
 				row.createEl("td", { text: mmdd, attr: { style: tdDayStyle } });
 				for (const year of yearList) {
-                    // Defile filepath
+					// Defile filepath
 					const dateStr = `${year}-${mmdd}`;
 					const filePath = yearDiaryMap[year][dateStr];
 					if (filePath) {
-                        const cell = row.createEl("td", {
-                            text: "",
-                            attr: { style: tdYearStyle },
-                        });
+						const cell = row.createEl("td", {
+							text: "",
+							attr: { style: tdYearStyle },
+						});
 						cell.addClass("clickable-diary-cell");
 						cell.setText("loading...");
-						cell.setAttr(
-							"title",
-							"open note"
-						);
+						cell.setAttr("title", "open note");
 						cell.style.cursor = "pointer";
-						const file = this.plugin.app.vault.getFileByPath(filePath);
+						const file =
+							this.plugin.app.vault.getFileByPath(filePath);
 						if (file) {
 							(async () => {
 								try {
-									const content = await this.plugin.app.vault.read(file);
+									const content =
+										await this.plugin.app.vault.read(file);
 									// # Extract content from a heading until the next heading of the same or higher level.
 									const lines = content.split("\n");
-									const headingPattern = this.plugin.settings.summaryHeading.trim();
-									const headingRegex = new RegExp("^#+\\s*" + headingPattern.replace(/[-\/\\^$*+?.()|[\]{}]/g, '\\$&'));
-                                    // Find summary line number
-									const summaryLineNum = lines.findIndex((line) =>
-										headingRegex.test(line)
+									const headingPattern =
+										this.plugin.settings.summaryHeading.trim();
+									const headingRegex = new RegExp(
+										"^#+\\s*" +
+											headingPattern.replace(
+												/[-\/\\^$*+?.()|[\]{}]/g,
+												"\\$&"
+											)
+									);
+									// Find summary line number
+									const summaryLineNum = lines.findIndex(
+										(line) => headingRegex.test(line)
 									);
 									cell.empty();
 									const iconSpan = document.createElement("span");
@@ -435,42 +457,60 @@ class YearlyDiaryCompareView extends ItemView {
 									iconSpan.style.cursor = "pointer";
 									iconSpan.title = "open note";
 									iconSpan.style.marginRight = "4px";
-									iconSpan.addEventListener("click", async (e) => {
-										e.stopPropagation();
-                                        await this.showDailyNote(plugin.app, filePath)
-									});
+									iconSpan.addEventListener(
+										"click",
+										async (e) => {
+											e.stopPropagation();
+											await this.showDailyNote(
+												plugin.app,
+												filePath
+											);
+										}
+									);
 									cell.appendChild(iconSpan);
 
 									if (summaryLineNum !== -1) {
-                                        // Get level of summary
-										const summaryLevel = (lines[summaryLineNum].match(/^#+/) || ["#"])[0].length;
+										// Get level of summary
+										const summaryLevel = (lines[
+											summaryLineNum
+										].match(/^#+/) || ["#"])[0].length;
 										let endLineNum = lines.length;
-										for (let i = summaryLineNum + 1; i < lines.length; i++) {
-											const m = lines[i].match(/^(#+)\s+/);
-											if ( m && m[1].length <= summaryLevel ) {
+										for (
+											let i = summaryLineNum + 1;
+											i < lines.length;
+											i++
+										) {
+											const m =
+												lines[i].match(/^(#+)\s+/);
+											if (
+												m &&
+												m[1].length <= summaryLevel
+											) {
 												endLineNum = i;
 												break;
 											}
 										}
 
-                                        // Get summary
+										// Get summary
 										const summary = lines
-											.slice(summaryLineNum + 1, endLineNum)
+											.slice(
+												summaryLineNum + 1,
+												endLineNum
+											)
 											.join("\n")
 											.trim();
 
 										if (summary) {
-											// Obsidianの型定義が4引数形式のみ対応のため、旧形式で呼び出し
-											// TODO: ObsidianのAPIが新形式に対応したら書き換え
 											MarkdownRenderer.render(
-                                                this.app,
+												this.app,
 												summary,
 												cell,
 												"",
 												plugin
 											);
 										} else {
-											const noneSpan = document.createElement("span");
+											const noneSpan =
+												document.createElement("span");
 											cell.appendChild(noneSpan);
 										}
 									}
@@ -486,8 +526,8 @@ class YearlyDiaryCompareView extends ItemView {
 							cell.setText("(no file found)");
 						}
 						cell.addEventListener("click", async () => {
-                            await this.showDailyNote(plugin.app, filePath)
-                        });
+							await this.showDailyNote(plugin.app, filePath);
+						});
 					}
 				}
 			}
@@ -513,15 +553,21 @@ class YearlyDiaryCompareView extends ItemView {
 				// tbody内のtrを取得
 				const trList = tbody.querySelectorAll("tr");
 				const visibleHeight = tableWrapper.clientHeight;
-                // Calc hight to row of today
-                let top = 0;
+				// Calc hight to row of today
+				let top = 0;
 				for (let i = 0; i < rowIndex; i++) {
 					top += trList[i].offsetHeight;
 				}
 				const rowHeight = trList[rowIndex]?.offsetHeight ?? 24;
-				const totalHeight = Array.from(trList).reduce((sum, tr) => sum + (tr.offsetHeight ?? 24), 0);
-				let scrollTop = top - (visibleHeight / 2) + (rowHeight / 2);
-				scrollTop = Math.max(0, Math.min(scrollTop, totalHeight - visibleHeight));
+				const totalHeight = Array.from(trList).reduce(
+					(sum, tr) => sum + (tr.offsetHeight ?? 24),
+					0
+				);
+				let scrollTop = top - visibleHeight / 2 + rowHeight / 2;
+				scrollTop = Math.max(
+					0,
+					Math.min(scrollTop, totalHeight - visibleHeight)
+				);
 				tableWrapper.scrollTop = scrollTop;
 			}
 		}, 0);
