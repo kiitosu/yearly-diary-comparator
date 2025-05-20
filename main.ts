@@ -22,16 +22,28 @@ class YearlyDiaryComparatorSettingTab extends PluginSettingTab {
 		const { containerEl } = this;
 		containerEl.empty();
 
-		containerEl.createEl("h2", { text: "年度比較プラグインの設定" });
+		containerEl.createEl("h2", { text: "Settings" });
 
 		new Setting(containerEl)
-			.setName("抜粋見出し名")
-			.setDesc("抜粋として表示する見出し名（例: [DAILY_SUMMARY]）")
+			.setName("extract keyword")
+			.setDesc("Heading keyword to extract data from（eg, [DAILY_SUMMARY]）")
 			.addText(text => text
 				.setPlaceholder("[DAILY_SUMMARY]")
 				.setValue(this.plugin.settings.summaryHeading)
 				.onChange(async (value) => {
 					this.plugin.settings.summaryHeading = value || "[DAILY_SUMMARY]";
+					await this.plugin.saveSettings();
+				}));
+
+		new Setting(containerEl)
+			.setName("width of year")
+			.setDesc("width of year columns (eg. 480)")
+			.addText(text => text
+				.setPlaceholder("480")
+				.setValue(String(this.plugin.settings.yearColWidth))
+				.onChange(async (value) => {
+					const num = Number(value);
+					this.plugin.settings.yearColWidth = (!isNaN(num) && num > 0) ? num : 480;
 					await this.plugin.saveSettings();
 				}));
 	}
@@ -44,10 +56,12 @@ const VIEW_TYPE_YEARLY_DIARY_COMPARE = "yearly-diary-compare-view";
 
 interface YearlyDiaryComparatorSettings {
 	summaryHeading: string;
+	yearColWidth: number;
 }
 
 const DEFAULT_SETTINGS: YearlyDiaryComparatorSettings = {
 	summaryHeading: "[DAILY_SUMMARY]",
+	yearColWidth: 480,
 };
 
 export default class YearlyDiaryComparatorPlugin extends Plugin {
@@ -56,7 +70,7 @@ export default class YearlyDiaryComparatorPlugin extends Plugin {
 		await this.loadSettings();
 		this.addSettingTab(new YearlyDiaryComparatorSettingTab(this.app, this));
 		// 左リボンに年度比較リスト表示ボタンを追加
-		this.addRibbonIcon("columns-3", "年度別比較リスト表示", () => {
+		this.addRibbonIcon("columns-3", "Open yearly comparator", () => {
 			const leaves = this.app.workspace.getLeavesOfType(
 				VIEW_TYPE_YEARLY_DIARY_COMPARE
 			);
@@ -70,7 +84,7 @@ export default class YearlyDiaryComparatorPlugin extends Plugin {
 		// コマンド追加: 年度比較ビューを開く
 		this.addCommand({
 			id: "open-yearly-diary-compare-view",
-			name: "年度比較ビューを開く",
+			name: "Open yearly comparator",
 			callback: () => {
 				this.activateView();
 			},
@@ -259,12 +273,12 @@ export default class YearlyDiaryComparatorPlugin extends Plugin {
 		for (const file of dailyNoteFiles) {
 			const baseMatch = file.basename.match(yearRegex);
 			const pathMatch = file.path.match(pathYearRegex);
-			console.log("年度抽出デバッグ:", {
-				basename: file.basename,
-				baseMatch,
-				path: file.path,
-				pathMatch,
-			});
+			// console.log("年度抽出デバッグ:", {
+			// 	basename: file.basename,
+			// 	baseMatch,
+			// 	path: file.path,
+			// 	pathMatch,
+			// });
 			if (baseMatch) {
 				yearSet.add(baseMatch[1]);
 			} else if (pathMatch) {
@@ -272,7 +286,7 @@ export default class YearlyDiaryComparatorPlugin extends Plugin {
 			}
 		}
 		const yearList = Array.from(yearSet).sort();
-		console.log("年度リスト（YYYY）:", yearList);
+		// console.log("年度リスト（YYYY）:", yearList);
 
 		// 年度ごとの日記データ構造生成
 		const yearDiaryMap: Record<
@@ -297,7 +311,7 @@ export default class YearlyDiaryComparatorPlugin extends Plugin {
 			}
 			yearDiaryMap[year] = dateMap;
 		}
-		console.log("年度ごとの日記データ構造:", yearDiaryMap);
+		// console.log("年度ごとの日記データ構造:", yearDiaryMap);
 	}
 }
 
@@ -334,7 +348,7 @@ class YearlyDiaryCompareView extends ItemView {
 		);
 		const yearColCount = yearList.length;
 		const dateColWidth = 56;
-		const yearColWidth = 480;
+		const yearColWidth = this.plugin.settings.yearColWidth;
 		const minTableWidth = dateColWidth + yearColWidth * yearColCount;
 		const table = tableWrapper.createEl("table");
 		table.setAttr(
