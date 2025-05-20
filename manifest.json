@@ -3,7 +3,7 @@
 	"name": "Yearly Diary Comparator",
 	"version": "1.0.0",
 	"minAppVersion": "0.15.0",
-	"description": "日記を年度ごとに左右比較し、無限スクロールで表示するObsidianプラグイン。",
+	"description": "Show a side-by-side yearly comparison of diary in daily notes",
 	"author": "kiitosu",
 	"authorUrl": "",
 	"fundingUrl": "",

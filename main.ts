@@ -316,13 +316,13 @@ class YearlyDiaryCompareView extends ItemView {
 	}
 
 	getDisplayText() {
-		return "年度比較ビュー";
+		return "Yearly diary comparator";
 	}
 
 	async onOpen() {
 		const container = this.containerEl.children[1];
 		container.empty();
-		container.createEl("h2", { text: "年度比較ビュー" });
+		container.createEl("h2", { text: "Yearly diary comparator" });
 		const yearDiaryMap = await this.plugin.getYearDiaryMap();
 		const yearList = Object.keys(yearDiaryMap).sort();
 
@@ -353,7 +353,7 @@ class YearlyDiaryCompareView extends ItemView {
 			thead.empty();
 			const headerRow = thead.createEl("tr");
 			headerRow.createEl("th", {
-				text: "日付",
+				text: "day",
 				attr: { style: thStyle },
 			});
 			for (const year of yearList) {
