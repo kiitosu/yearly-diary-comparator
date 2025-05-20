@@ -234,7 +234,6 @@ export default class YearlyDiaryComparatorPlugin extends Plugin {
 				internalDailyNotes?.instance?.options?.folder !== undefined
 			) {
 				dailyNoteFolder = internalDailyNotes.instance.options.folder;
-				console.log("internalPluginsから取得:", dailyNoteFolder);
 			}
 		}
 		const files = this.app.vault.getFiles();
@@ -248,23 +247,6 @@ export default class YearlyDiaryComparatorPlugin extends Plugin {
 				file.path.startsWith(dailyNoteFolder + "/")
 			);
 		}
-		console.log("Daily Note Folder:", dailyNoteFolder ?? "(Vault root)");
-		console.log(
-			"Daily Note Files:",
-			dailyNoteFiles.map((f) => f.path)
-		);
-
-		// デバッグ: 各ファイルのfile.name, file.basename, file.pathを出力
-		for (const file of dailyNoteFiles) {
-			console.log(
-				"file.name:",
-				file.name,
-				"file.basename:",
-				file.basename,
-				"file.path:",
-				file.path
-			);
-		}
 
 		// 年度リストの自動生成（file.basename, file.path両方で抽出を試みる）
 		const yearSet = new Set<string>();
@@ -273,12 +255,6 @@ export default class YearlyDiaryComparatorPlugin extends Plugin {
 		for (const file of dailyNoteFiles) {
 			const baseMatch = file.basename.match(yearRegex);
 			const pathMatch = file.path.match(pathYearRegex);
-			// console.log("年度抽出デバッグ:", {
-			// 	basename: file.basename,
-			// 	baseMatch,
-			// 	path: file.path,
-			// 	pathMatch,
-			// });
 			if (baseMatch) {
 				yearSet.add(baseMatch[1]);
 			} else if (pathMatch) {
@@ -286,7 +262,6 @@ export default class YearlyDiaryComparatorPlugin extends Plugin {
 			}
 		}
 		const yearList = Array.from(yearSet).sort();
-		// console.log("年度リスト（YYYY）:", yearList);
 
 		// 年度ごとの日記データ構造生成
 		const yearDiaryMap: Record<
@@ -311,7 +286,6 @@ export default class YearlyDiaryComparatorPlugin extends Plugin {
 			}
 			yearDiaryMap[year] = dateMap;
 		}
-		// console.log("年度ごとの日記データ構造:", yearDiaryMap);
 	}
 }
 
@@ -422,10 +396,10 @@ class YearlyDiaryCompareView extends ItemView {
 					});
 					if (filePath) {
 						cell.addClass("clickable-diary-cell");
-						cell.setText("読み込み中...");
+						cell.setText("loading...");
 						cell.setAttr(
 							"title",
-							"クリックでノートを中央ペインに表示"
+							"open note"
 						);
 						cell.style.cursor = "pointer";
 						const file =
@@ -471,7 +445,7 @@ class YearlyDiaryCompareView extends ItemView {
 										const iconSpan = document.createElement("span");
 										iconSpan.textContent = "📄";
 										iconSpan.style.cursor = "pointer";
-										iconSpan.title = "中央ペインでノートを開く";
+										iconSpan.title = "open note";
 										iconSpan.style.marginRight = "4px";
 										iconSpan.addEventListener("click", async (e) => {
 											e.stopPropagation();
@@ -494,7 +468,7 @@ class YearlyDiaryCompareView extends ItemView {
 											);
 										} else {
 											const noneSpan = document.createElement("span");
-											noneSpan.textContent = "(まとめなし)";
+											noneSpan.textContent = "(no summary)";
 											cell.appendChild(noneSpan);
 										}
 									} else {
@@ -502,7 +476,7 @@ class YearlyDiaryCompareView extends ItemView {
 										const iconSpan = document.createElement("span");
 										iconSpan.textContent = "📄";
 										iconSpan.style.cursor = "pointer";
-										iconSpan.title = "中央ペインでノートを開く";
+										iconSpan.title = "open note";
 										iconSpan.style.marginRight = "4px";
 										iconSpan.addEventListener("click", async (e) => {
 											e.stopPropagation();
@@ -523,10 +497,10 @@ class YearlyDiaryCompareView extends ItemView {
 										"Markdown render error:",
 										err
 									);
-									cell.setText("(読み込み失敗)");
+									cell.setText("(read errir)");
 								});
 						} else {
-							cell.setText("(ファイルなし)");
+							cell.setText("(no file found)");
 						}
 						cell.addEventListener("click", async () => {
 							const file =
