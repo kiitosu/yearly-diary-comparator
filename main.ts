@@ -400,11 +400,8 @@ class YearlyDiaryCompareView extends ItemView {
 							"open note"
 						);
 						cell.style.cursor = "pointer";
-						const file =
-							this.plugin.app.vault.getAbstractFileByPath(
-								filePath
-							);
-						if (file && file instanceof TFile) {
+						const file = this.plugin.app.vault.getFileByPath(filePath);
+						if (file) {
 							this.plugin.app.vault
 								.read(file)
 								.then((content) => {
@@ -447,8 +444,8 @@ class YearlyDiaryCompareView extends ItemView {
 										iconSpan.style.marginRight = "4px";
 										iconSpan.addEventListener("click", async (e) => {
 											e.stopPropagation();
-											const file = plugin.app.vault.getAbstractFileByPath(filePath);
-											if (file && file instanceof TFile) {
+											const file = plugin.app.vault.getFileByPath(filePath);
+											if (file) {
 												const centerLeaf = plugin.app.workspace.getLeaf(false);
 												if (centerLeaf) {
 													await centerLeaf.openFile(file, { active: true });
@@ -478,8 +475,8 @@ class YearlyDiaryCompareView extends ItemView {
 										iconSpan.style.marginRight = "4px";
 										iconSpan.addEventListener("click", async (e) => {
 											e.stopPropagation();
-											const file = plugin.app.vault.getAbstractFileByPath(filePath);
-											if (file && file instanceof TFile) {
+											const file = plugin.app.vault.getFileByPath(filePath);
+											if (file) {
 												const centerLeaf = plugin.app.workspace.getLeaf(false);
 												if (centerLeaf) {
 													await centerLeaf.openFile(file, { active: true });
@@ -501,22 +498,14 @@ class YearlyDiaryCompareView extends ItemView {
 							cell.setText("(no file found)");
 						}
 						cell.addEventListener("click", async () => {
-							const file =
-								this.plugin.app.vault.getAbstractFileByPath(
-									filePath
-								);
-							if (file && file instanceof TFile) {
-								const centerLeaf =
-									this.plugin.app.workspace.getLeaf(
-										false
-									);
+							const file = this.plugin.app.vault.getFileByPath(filePath);
+							if (file) {
+								const centerLeaf = this.plugin.app.workspace.getLeaf(false);
 								if (centerLeaf) {
 									await centerLeaf.openFile(file, {
 										active: true,
 									});
-									this.plugin.app.workspace.revealLeaf(
-										centerLeaf
-									);
+									this.plugin.app.workspace.revealLeaf(centerLeaf);
 								}
 							}
 						});
