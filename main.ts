@@ -236,8 +236,18 @@ class YearlyDiaryCompareView extends ItemView {
 	async onOpen() {
 		const container = this.containerEl.children[1];
 		container.empty();
-		container.createEl("h2", { text: "Yearly diary comparator" });
-		const yearDiaryMap = await this.plugin.getYearDiaryMap();
+		const titleWrapper = container.createEl("div", { attr: { style: "display: flex; align-items: center; gap: 8px;" } });
+		titleWrapper.createEl("h2", { text: "Yearly diary comparator", attr: { style: "margin: 0;" } });
+		const reloadBtn = titleWrapper.createEl("button", { attr: { style: "display: flex; align-items: center; justify-content: center; width: 40px; height: 40px; cursor: pointer; border: none; background: transparent; padding: 0; margin-left: 4px;" } });
+		reloadBtn.title = "Reload table";
+		const iconSpan = document.createElement("span");
+		iconSpan.textContent = "⟳";
+		iconSpan.style.fontSize = "2rem";
+		iconSpan.style.cursor = "pointer";
+		iconSpan.title = "reload table";
+		reloadBtn.appendChild(iconSpan);
+
+        const yearDiaryMap = await this.plugin.getYearDiaryMap();
 		const yearList = Object.keys(yearDiaryMap).sort();
 
 		// テーブルを横スクロール可能なラッパーで囲む
@@ -276,7 +286,7 @@ class YearlyDiaryCompareView extends ItemView {
 		}
 
 		const plugin = this.plugin;
-		const renderTable = () => {
+		renderTable = () => {
 			// styles are hard coded because I can not make header sticky without hard coded styles.
 			const thStyle = `
 				border: 1px solid var(--background-modifier-border);
@@ -491,6 +501,10 @@ class YearlyDiaryCompareView extends ItemView {
 				}
 			}
 		};
+
+		reloadBtn.addEventListener("click", () => {
+			renderTable();
+		});
 
 		renderTable();
 		// 最新の年が右端に来るように自動スクロール＆今日が縦中央に来るようにスクロール（遅延実行で確実に反映）
