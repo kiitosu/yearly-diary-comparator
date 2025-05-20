@@ -333,9 +333,11 @@ class YearlyDiaryCompareView extends ItemView {
 					days.push(`${mm}-${dd}`);
 				}
 			}
+			const today = new Date();
+			const todayStr = `${String(today.getMonth() + 1).padStart(2, "0")}-${String(today.getDate()).padStart(2, "0")}`;
 			for (const mmdd of days) {
 				const row = tbody.createEl("tr");
-				const tdStyle = `
+				let tdStyle = `
 					border: 1px solid var(--background-modifier-border);
 					padding: 4px;
 					width: ${dateColWidth}px;
@@ -348,6 +350,10 @@ class YearlyDiaryCompareView extends ItemView {
 					background: var(--background-secondary);
 					color: var(--text-normal);
 				`;
+				// hi-light today
+				if (mmdd === todayStr) {
+					tdStyle += "background: var(--color-accent); color: var(--background-primary); font-weight: bold;";
+				}
 				const tdYearStyle = `
 					border: 1px solid var(--background-modifier-border);
 					padding: 4px;
