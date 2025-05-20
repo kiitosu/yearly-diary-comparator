@@ -286,7 +286,7 @@ class YearlyDiaryCompareView extends ItemView {
 		}
 
 		const plugin = this.plugin;
-		renderTable = () => {
+		const renderTable = () => {
 			// styles are hard coded because I can not make header sticky without hard coded styles.
 			const thStyle = `
 				border: 1px solid var(--background-modifier-border);
@@ -401,6 +401,25 @@ class YearlyDiaryCompareView extends ItemView {
 									const summaryIdx = lines.findIndex((line) =>
 										headingRegex.test(line)
 									);
+									cell.empty();
+									const iconSpan = document.createElement("span");
+									iconSpan.textContent = "📄";
+									iconSpan.style.cursor = "pointer";
+									iconSpan.title = "open note";
+									iconSpan.style.marginRight = "4px";
+									iconSpan.addEventListener("click", async (e) => {
+										e.stopPropagation();
+										const file = plugin.app.vault.getFileByPath(filePath);
+										if (file) {
+											const centerLeaf = plugin.app.workspace.getLeaf(false);
+											if (centerLeaf) {
+												await centerLeaf.openFile(file, { active: true });
+												plugin.app.workspace.revealLeaf(centerLeaf);
+											}
+										}
+									});
+									cell.appendChild(iconSpan);
+
 									if (summaryIdx !== -1) {
 										const summaryLevel = (lines[
 											summaryIdx
@@ -425,24 +444,8 @@ class YearlyDiaryCompareView extends ItemView {
 											.slice(summaryIdx + 1, endIdx)
 											.join("\n")
 											.trim();
-										cell.empty();
-										const iconSpan = document.createElement("span");
-										iconSpan.textContent = "📄";
-										iconSpan.style.cursor = "pointer";
-										iconSpan.title = "open note";
-										iconSpan.style.marginRight = "4px";
-										iconSpan.addEventListener("click", async (e) => {
-											e.stopPropagation();
-											const file = plugin.app.vault.getFileByPath(filePath);
-											if (file) {
-												const centerLeaf = plugin.app.workspace.getLeaf(false);
-												if (centerLeaf) {
-													await centerLeaf.openFile(file, { active: true });
-													plugin.app.workspace.revealLeaf(centerLeaf);
-												}
-											}
-										});
-										cell.appendChild(iconSpan);
+
+                                            cell.appendChild(iconSpan);
 										if (summary) {
 											MarkdownRenderer.renderMarkdown(
 												summary,
@@ -454,25 +457,6 @@ class YearlyDiaryCompareView extends ItemView {
 											const noneSpan = document.createElement("span");
 											cell.appendChild(noneSpan);
 										}
-									} else {
-										cell.empty();
-										const iconSpan = document.createElement("span");
-										iconSpan.textContent = "📄";
-										iconSpan.style.cursor = "pointer";
-										iconSpan.title = "open note";
-										iconSpan.style.marginRight = "4px";
-										iconSpan.addEventListener("click", async (e) => {
-											e.stopPropagation();
-											const file = plugin.app.vault.getFileByPath(filePath);
-											if (file) {
-												const centerLeaf = plugin.app.workspace.getLeaf(false);
-												if (centerLeaf) {
-													await centerLeaf.openFile(file, { active: true });
-													plugin.app.workspace.revealLeaf(centerLeaf);
-												}
-											}
-										});
-										cell.appendChild(iconSpan);
 									}
 								} catch (err) {
 									console.error(
