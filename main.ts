@@ -22,10 +22,8 @@ class YearlyDiaryComparatorSettingTab extends PluginSettingTab {
 		const { containerEl } = this;
 		containerEl.empty();
 
-		containerEl.createEl("h2", { text: "Settings" });
-
 		new Setting(containerEl)
-			.setName("extract keyword")
+			.setName("Extract keyword")
 			.setDesc("Heading keyword to extract data from（eg, [DAILY_SUMMARY]）")
 			.addText(text => text
 				.setPlaceholder("[DAILY_SUMMARY]")
@@ -36,8 +34,8 @@ class YearlyDiaryComparatorSettingTab extends PluginSettingTab {
 				}));
 
 		new Setting(containerEl)
-			.setName("width of year")
-			.setDesc("width of year columns (eg. 480)")
+			.setName("Width of year columns")
+			.setDesc("Width of year columns (eg. 480)")
 			.addText(text => text
 				.setPlaceholder("480")
 				.setValue(String(this.plugin.settings.yearColWidth))
