@@ -345,6 +345,22 @@ class YearlyDiaryCompareView extends ItemView {
 		const headerRow = thead.createEl("tr");
 		const tbody = table.createEl("tbody");
 
+		// days配列をonOpenスコープで定義
+		const days: string[] = [];
+		for (let month = 0; month < 12; month++) {
+			for (let day = 1; day <= 31; day++) {
+				const mm = String(month + 1).padStart(2, "0");
+				const dd = String(day).padStart(2, "0");
+				const dateStr = `XXXX-${mm}-${dd}`;
+				if (
+					new Date(`2020-${mm}-${dd}`).getMonth() + 1 !==
+					month + 1
+				)
+					continue;
+				days.push(`${mm}-${dd}`);
+			}
+		}
+
 		const plugin = this.plugin;
 		const renderTable = () => {
 			const thStyle = `border: 1px solid #888; padding: 4px; background: #222; width: ${dateColWidth}px; min-width: ${dateColWidth}px; max-width: ${dateColWidth}px; white-space: nowrap; color: #fff; position: sticky; left: 0; top: 0; z-index: 11;`;
@@ -524,9 +540,27 @@ class YearlyDiaryCompareView extends ItemView {
 		};
 
 		renderTable();
-		// 最新の年が右端に来るように自動スクロール（遅延実行で確実に反映）
+		// 最新の年が右端に来るように自動スクロール＆今日が縦中央に来るようにスクロール（遅延実行で確実に反映）
 		setTimeout(() => {
+			// 横方向（年）スクロール
 			tableWrapper.scrollLeft = tableWrapper.scrollWidth;
+
+			// 縦方向（今日）スクロール
+			const today = new Date();
+			const mm = String(today.getMonth() + 1).padStart(2, "0");
+			const dd = String(today.getDate()).padStart(2, "0");
+			const todayStr = `${mm}-${dd}`;
+			const rowIndex = days.indexOf(todayStr);
+			if (rowIndex !== -1) {
+				// tbody内のtrを取得
+				const trList = tbody.querySelectorAll("tr");
+				const rowHeight = trList[0]?.offsetHeight ?? 24;
+				const visibleHeight = tableWrapper.clientHeight;
+				const totalHeight = rowHeight * days.length;
+				let scrollTop = rowHeight * rowIndex - (visibleHeight / 2) + (rowHeight / 2);
+				scrollTop = Math.max(0, Math.min(scrollTop, totalHeight - visibleHeight));
+				tableWrapper.scrollTop = scrollTop;
+			}
 		}, 0);
 		window.addEventListener("resize", renderTable);
 		this._renderTableHandler = renderTable;
