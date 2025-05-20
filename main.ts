@@ -349,6 +349,7 @@ class YearlyDiaryCompareView extends ItemView {
 
 		const plugin = this.plugin;
 		const renderTable = () => {
+            // styles are hard coded because I can not make header sticky without hard coded styles.
 			const thStyle = `border: 1px solid #888; padding: 4px; background: #222; width: ${dateColWidth}px; min-width: ${dateColWidth}px; max-width: ${dateColWidth}px; white-space: nowrap; color: #fff; position: sticky; left: 0; top: 0; z-index: 11;`;
 			const thYearStyle = `border: 1px solid #888; padding: 4px; background: #f0f0f0; width: ${yearColWidth}px; min-width: ${yearColWidth}px; max-width: ${yearColWidth}px; color: #000; position: sticky; top: 0; z-index: 10;`;
 
