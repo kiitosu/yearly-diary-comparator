@@ -1,8 +1,116 @@
-/*
+/* table base */
+.yearly-diary-table {
+  border-collapse: collapse;
+  table-layout: fixed;
+  width: 100%;
+}
 
-This CSS file will be included with your plugin, and
-available in the app when your plugin is enabled.
+/* table header: year */
+.th-year {
+  border: 1px solid var(--background-modifier-border);
+  padding: 4px;
+  color: var(--text-normal);
+  background: var(--background-primary);
+  position: sticky;
+  top: 0;
+  z-index: 10;
+}
 
-If your plugin does not need CSS, delete this file.
+/* table header: day */
+.th-day {
+  border: 1px solid var(--background-modifier-border);
+  padding: 4px;
+  color: var(--text-normal);
+  width: 56px;
+  min-width: 56px;
+  max-width: 56px;
+  white-space: nowrap;
+  background: var(--background-secondary);
+  position: sticky;
+  left: 0;
+  top: 0;
+  z-index: 11;
+}
 
-*/
+/* table data: year */
+.td-year {
+  border: 1px solid var(--background-modifier-border);
+  padding: 4px;
+  color: var(--text-normal);
+  background: var(--background-primary);
+}
+
+/* table data: day */
+.td-day {
+  border: 1px solid var(--background-modifier-border);
+  padding: 4px;
+  color: var(--text-normal);
+  width: 56px;
+  min-width: 56px;
+  max-width: 56px;
+  white-space: nowrap;
+  background: var(--background-secondary);
+  position: sticky;
+  left: 0;
+  z-index: 1;
+}
+
+/* hi light today */
+.today-highlight {
+  background: var(--color-accent);
+  color: var(--background-primary);
+  font-weight: bold;
+}
+
+/* scrollable */
+.table-wrapper {
+  overflow-x: auto;
+  overflow-y: auto;
+  height: 100%;
+  min-height: 100%;
+}
+
+/* title wrapper */
+.title-wrapper {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+/* title */
+.title-h2 {
+  margin: 0;
+}
+
+/* reload button */
+.reload-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 40px;
+  height: 40px;
+  cursor: pointer;
+  border: none;
+  background: transparent;
+  padding: 0;
+  margin-left: 4px;
+}
+
+/* reload icon */
+.reload-icon {
+  font-size: 2rem;
+  cursor: pointer;
+  margin-right: 4px;
+}
+
+/* open note icon */
+.open-note-icon {
+  font-size: 1rem;
+  cursor: pointer;
+  margin-right: 4px;
+}
+
+/* clickable cell */
+.clickable-diary-cell {
+  cursor: pointer;
+}

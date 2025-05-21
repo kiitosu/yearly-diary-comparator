@@ -72,6 +72,22 @@ export default class YearlyDiaryComparatorPlugin extends Plugin {
 	settings: YearlyDiaryComparatorSettings;
 	async onload() {
 		await this.loadSettings();
+
+		// styles.cssをheadに追加
+		const cssPath = "styles.css";
+		const cssId = "yearly-diary-comparator-style";
+		const exist = document.getElementById(cssId);
+		if (!exist) {
+			fetch(cssPath)
+				.then((res) => res.text())
+				.then((css) => {
+					const style = document.createElement("style");
+					style.id = cssId;
+					style.textContent = css;
+					document.head.appendChild(style);
+				});
+		}
+
 		this.addSettingTab(new YearlyDiaryComparatorSettingTab(this.app, this));
 
 		// add button to the ribbon
@@ -118,11 +134,16 @@ export default class YearlyDiaryComparatorPlugin extends Plugin {
 	}
 
 	onunload() {
-		// do clean up if needed
+		// headからstyle要素を削除
+		const cssId = "yearly-diary-comparator-style";
+		const style = document.getElementById(cssId);
+		if (style) {
+			style.remove();
+		}
 	}
 
 	async loadSettings() {
-		this.settings = Object.assign(
+		this.settings = Object.assign(                      
 			{},
 			DEFAULT_SETTINGS,
 			await this.loadData()
@@ -135,7 +156,7 @@ export default class YearlyDiaryComparatorPlugin extends Plugin {
 
 	/**
 	 * function to get diary data
-	 */
+	 */ 
 	async getYearDiaryMap(): Promise<
 		Record<string, Record<string, string | undefined>>
 	> {
@@ -257,46 +278,32 @@ class YearlyDiaryCompareView extends ItemView {
 		container.empty();
 
 		// Define title of view
-		const titleWrapper = container.createEl("div", {
-			attr: { style: "display: flex; align-items: center; gap: 8px;" },
-		});
+		const titleWrapper = container.createEl("div", { cls: "title-wrapper" });
 		titleWrapper.createEl("h2", {
 			text: "Yearly diary comparator",
-			attr: { style: "margin: 0;" },
+			cls: "title-h2",
 		});
 		// Add reload button to title
-		const reloadBtn = titleWrapper.createEl("button", {
-			attr: {
-				style: "display: flex; align-items: center; justify-content: center; width: 40px; height: 40px; cursor: pointer; border: none; background: transparent; padding: 0; margin-left: 4px;",
-			},
-		});
+		const reloadBtn = titleWrapper.createEl("button", { cls: "reload-btn" });
 		reloadBtn.title = "Reload table";
 		const iconSpan = document.createElement("span");
 		iconSpan.textContent = "⟳";
-		iconSpan.style.fontSize = "2rem";
-		iconSpan.style.cursor = "pointer";
 		iconSpan.title = "reload table";
+		iconSpan.className = "reload-icon";
 		reloadBtn.appendChild(iconSpan);
 
 		const yearDiaryMap = await this.plugin.getYearDiaryMap();
 		const yearList = Object.keys(yearDiaryMap).sort();
 
 		// Wrap table with scrollable
-		const tableWrapper = container.createEl("div");
-		tableWrapper.setAttr(
-			"style",
-			"overflow-x: auto; overflow-y: auto; height: 100%; min-height: 100%;"
-		);
+		const tableWrapper = container.createEl("div", { cls: "table-wrapper" });
 
 		const yearColCount = yearList.length;
 		const dayColWidth = 56;
 		const yearColWidth = this.plugin.settings.yearColWidth;
 		const minTableWidth = dayColWidth + yearColWidth * yearColCount;
-		const table = tableWrapper.createEl("table");
-		table.setAttr(
-			"style",
-			`border-collapse: collapse; min-width: ${minTableWidth}px; table-layout: fixed;`
-		);
+		const table = tableWrapper.createEl("table", { cls: "yearly-diary-table" });
+		table.style.minWidth = `${minTableWidth}px`;
 		const thead = table.createEl("thead");
 		const tbody = table.createEl("tbody");
 
@@ -306,7 +313,6 @@ class YearlyDiaryCompareView extends ItemView {
 			for (let day = 1; day <= 31; day++) {
 				const mm = String(month + 1).padStart(2, "0");
 				const dd = String(day).padStart(2, "0");
-				const dateStr = `XXXX-${mm}-${dd}`;
 				if (new Date(`2020-${mm}-${dd}`).getMonth() + 1 !== month + 1)
 					continue;
 				days.push(`${mm}-${dd}`);
@@ -315,64 +321,17 @@ class YearlyDiaryCompareView extends ItemView {
 
 		const plugin = this.plugin;
 		const renderTable = () => {
-			// styles are hard coded because I can not make header sticky without hard coded styles.
-			const zIndexTableHeaderDay = 11;
-			const zIndexTableHeaderYear = 10;
-			const zIndexTableDataDay = 1;
-
-			const baseStyle = [
-				`border: 1px solid var(--background-modifier-border)`,
-				`padding: 4px`,
-				`color: var(--text-normal)`,
-			];
-			const dayWidthStyle = [
-				`width: ${dayColWidth}px`,
-				`min-width: ${dayColWidth}px`,
-				`max-width: ${dayColWidth}px`,
-				`white-space: nowrap`,
-				"background: var(--background-secondary)",
-			];
-			const yearWidthStyle = [
-				`width: ${yearColWidth}px`,
-				`min-width: ${yearColWidth}px`,
-				`max-width: ${yearColWidth}px`,
-				`background: var(--background-primary)`,
-			];
-			const hiLightStyle = [
-				"background: var(--color-accent)",
-				"color: var(--background-primary)",
-				"font-weight: bold",
-			];
-
-			const thDayStyle = [
-				...baseStyle,
-				...dayWidthStyle,
-				`position: sticky`,
-				`left: 0`,
-				`top: 0`,
-				`z-index: ${zIndexTableHeaderDay}`,
-			].join(";");
-
-			const thYearStyle = [
-				...baseStyle,
-				...yearWidthStyle,
-				`position: sticky`,
-				`top: 0`,
-				`z-index: ${zIndexTableHeaderYear}`,
-			].join(";");
-
-			const tdYearStyle = [...baseStyle, ...yearWidthStyle].join(";");
 
 			thead.empty();
 			const headerRow = thead.createEl("tr");
 			headerRow.createEl("th", {
 				text: "day",
-				attr: { style: thDayStyle },
+				cls: "th-day",
 			});
 			for (const year of yearList) {
 				headerRow.createEl("th", {
 					text: year,
-					attr: { style: thYearStyle },
+					cls: "th-year",
 				});
 			}
 
@@ -382,7 +341,6 @@ class YearlyDiaryCompareView extends ItemView {
 				for (let day = 1; day <= 31; day++) {
 					const mm = String(month + 1).padStart(2, "0");
 					const dd = String(day).padStart(2, "0");
-					const dateStr = `XXXX-${mm}-${dd}`;
 					if (
 						new Date(`2020-${mm}-${dd}`).getMonth() + 1 !==
 						month + 1
@@ -399,23 +357,14 @@ class YearlyDiaryCompareView extends ItemView {
 
 			// Create cell for 366 days
 			for (const mmdd of days) {
-				// Define tdDayStyle dynamically
-				const styles = [
-					...baseStyle,
-					...dayWidthStyle,
-					`position: sticky`,
-					`left: 0`,
-					`z-index: ${zIndexTableDataDay}`,
-				];
-				// hi-light today
-				if (mmdd === todayStr) {
-					styles.push(...hiLightStyle);
-				}
-				const tdDayStyle = styles.join(";");
+				// 今日かどうかでクラスを分岐
+				const tdDayCls = mmdd === todayStr
+					? "td-day today-highlight"
+					: "td-day";
 
 				// Create cells for years
 				const row = tbody.createEl("tr");
-				row.createEl("td", { text: mmdd, attr: { style: tdDayStyle } });
+				row.createEl("td", { text: mmdd, cls: tdDayCls });
 				for (const year of yearList) {
 					// Defile filepath
 					const dateStr = `${year}-${mmdd}`;
@@ -423,12 +372,10 @@ class YearlyDiaryCompareView extends ItemView {
 					if (filePath) {
 						const cell = row.createEl("td", {
 							text: "",
-							attr: { style: tdYearStyle },
+							cls: "td-year clickable-diary-cell",
 						});
-						cell.addClass("clickable-diary-cell");
 						cell.setText("loading...");
 						cell.setAttr("title", "open note");
-						cell.style.cursor = "pointer";
 						const file =
 							this.plugin.app.vault.getFileByPath(filePath);
 						if (file) {
@@ -454,9 +401,8 @@ class YearlyDiaryCompareView extends ItemView {
 									cell.empty();
 									const iconSpan = document.createElement("span");
 									iconSpan.textContent = "📄";
-									iconSpan.style.cursor = "pointer";
 									iconSpan.title = "open note";
-									iconSpan.style.marginRight = "4px";
+									iconSpan.className = "open-note-icon";
 									iconSpan.addEventListener(
 										"click",
 										async (e) => {
