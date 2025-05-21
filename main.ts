@@ -6,6 +6,7 @@ import {
 	App,
 	PluginSettingTab,
 	Setting,
+	TFile,
 } from "obsidian";
 
 // Settings for my plugin
@@ -183,13 +184,13 @@ export default class YearlyDiaryComparatorPlugin extends Plugin {
 
 		// Get files in specified folder
 		const files = this.app.vault.getFiles();
-		let dailyNoteFiles: any[];
+		let dailyNoteFiles: TFile[];
 		if (!dailyNoteFolder) {
 			dailyNoteFiles = files.filter(
-				(file: any) => !file.path.includes("/")
+				(file: TFile) => !file.path.includes("/")
 			);
 		} else {
-			dailyNoteFiles = files.filter((file: any) =>
+			dailyNoteFiles = files.filter((file: TFile) =>
 				file.path.startsWith(dailyNoteFolder + "/")
 			);
 		}
@@ -231,7 +232,7 @@ export default class YearlyDiaryComparatorPlugin extends Plugin {
 				const dd = String(d.getDate()).padStart(2, "0");
 				const dateStr = `${year}-${mm}-${dd}`;
 				const file = dailyNoteFiles.find(
-					(f: any) => f.basename === dateStr
+					(f: TFile) => f.basename === dateStr
 				);
 				dateMap[dateStr] = file ? file.path : undefined;
 			}
