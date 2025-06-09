@@ -367,18 +367,23 @@ class YearlyDiaryCompareView extends ItemView {
 				const row = tbody.createEl("tr");
 				row.createEl("td", { text: mmdd, cls: tdDayCls });
 				for (const year of yearList) {
-					// Defile filepath
+					// Define filepath
 					const dateStr = `${year}-${mmdd}`;
 					const filePath = yearDiaryMap[year][dateStr];
+					
+					// 常にセルを作成する
+					const cell = row.createEl("td", {
+						text: "",
+						cls: "td-year",
+					});
+					
 					if (filePath) {
-						const cell = row.createEl("td", {
-							text: "",
-							cls: "td-year clickable-diary-cell",
-						});
+						// ファイルが存在する場合のみクリック可能にする
+						cell.addClass("clickable-diary-cell");
 						cell.setText("loading...");
 						cell.setAttr("title", "open note");
-						const file =
-							this.plugin.app.vault.getFileByPath(filePath);
+						
+						const file = this.plugin.app.vault.getFileByPath(filePath);
 						if (file) {
 							(async () => {
 								try {
@@ -472,9 +477,14 @@ class YearlyDiaryCompareView extends ItemView {
 						} else {
 							cell.setText("(no file found)");
 						}
+						
 						cell.addEventListener("click", async () => {
 							await this.showDailyNote(plugin.app, filePath);
 						});
+					} else {
+						// ファイルが存在しない場合は空のセルとして表示
+						cell.setText("");
+						cell.setAttr("title", "no note");
 					}
 				}
 			}
