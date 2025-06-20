@@ -79,14 +79,16 @@ export default class YearlyDiaryComparatorPlugin extends Plugin {
 		const cssId = "yearly-diary-comparator-style";
 		const exist = document.getElementById(cssId);
 		if (!exist) {
-			fetch(cssPath)
-				.then((res) => res.text())
-				.then((css) => {
-					const style = document.createElement("style");
-					style.id = cssId;
-					style.textContent = css;
-					document.head.appendChild(style);
-				});
+			try {
+				const res = await fetch(cssPath);
+				const css = await res.text();
+				const style = document.createElement("style");
+				style.id = cssId;
+				style.textContent = css;
+				document.head.appendChild(style);
+			} catch (error) {
+				console.error("Failed to load styles.css:", error);
+			}
 		}
 
 		this.addSettingTab(new YearlyDiaryComparatorSettingTab(this.app, this));
