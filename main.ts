@@ -82,7 +82,7 @@ export default class YearlyDiaryComparatorPlugin extends Plugin {
 			try {
 				const res = await fetch(cssPath);
 				const css = await res.text();
-				const style = document.createElement("style");
+				const style = document.head.createEl("style");
 				style.id = cssId;
 				style.textContent = css;
 				document.head.appendChild(style);
@@ -275,7 +275,7 @@ class YearlyDiaryCompareView extends ItemView {
 		// Add reload button to title
 		const reloadBtn = titleWrapper.createEl("button", { cls: "reload-btn" });
 		reloadBtn.title = "Reload table";
-		const iconSpan = document.createElement("span");
+		const iconSpan = reloadBtn.createSpan();
 		iconSpan.textContent = "⟳";
 		iconSpan.title = "reload table";
 		iconSpan.className = "reload-icon";
@@ -393,7 +393,7 @@ class YearlyDiaryCompareView extends ItemView {
 										(line) => headingRegex.test(line)
 									);
 									cell.empty();
-									const iconSpan = document.createElement("span");
+									const iconSpan = cell.createSpan();
 									iconSpan.textContent = "📄";
 									iconSpan.title = "open note";
 									iconSpan.className = "open-note-icon";
@@ -450,7 +450,7 @@ class YearlyDiaryCompareView extends ItemView {
 											);
 										} else {
 											const noneSpan =
-												document.createElement("span");
+												cell.createSpan();
 											cell.appendChild(noneSpan);
 										}
 									}
