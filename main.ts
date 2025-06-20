@@ -280,10 +280,7 @@ class YearlyDiaryCompareView extends ItemView {
 
 		// Define title of view
 		const titleWrapper = container.createEl("div", { cls: "title-wrapper" });
-		titleWrapper.createEl("h2", {
-			text: "Yearly diary comparator",
-			cls: "title-h2",
-		});
+
 		// Add reload button to title
 		const reloadBtn = titleWrapper.createEl("button", { cls: "reload-btn" });
 		reloadBtn.title = "Reload table";
