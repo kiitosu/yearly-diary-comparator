@@ -8,6 +8,7 @@ import {
 	Setting,
 	TFile,
 } from "obsidian";
+import { title } from "process";
 
 // Settings for my plugin
 interface YearlyDiaryComparatorSettings {
@@ -271,7 +272,11 @@ class YearlyDiaryCompareView extends ItemView {
 		container.empty();
 
 		// Define title of view
-		const titleWrapper = container.createEl("div", { cls: "title-wrapper" });
+		const titleWrapper = container.createEl("div", { cls: "title-wrapper"});
+
+		// Add title
+		new Setting(titleWrapper).setName("Yearly diary comparator").setHeading();
+
 		// Add reload button to title
 		const reloadBtn = titleWrapper.createEl("button", { cls: "reload-btn" });
 		reloadBtn.title = "Reload table";
