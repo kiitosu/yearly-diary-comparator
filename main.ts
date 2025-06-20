@@ -496,7 +496,7 @@ class YearlyDiaryCompareView extends ItemView {
 
 		renderTable();
 		// Automatically scroll so that the latest year appears on the right edge, and today is centered vertically (with delayed execution to ensure proper rendering).
-		setTimeout(() => {
+		window.setTimeout(() => {
 			// horizontal scroll to right end
 			tableWrapper.scrollLeft = tableWrapper.scrollWidth;
 
