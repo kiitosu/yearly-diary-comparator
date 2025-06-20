@@ -466,7 +466,7 @@ class YearlyDiaryCompareView extends ItemView {
 							cell.setText("(no file found)");
 						}
 						
-						cell.addEventListener("click", async () => {
+						this.registerDomEvent(cell, "click", async () => {
 							await this.showDailyNote(plugin.app, filePath);
 						});
 					} else {
@@ -478,7 +478,7 @@ class YearlyDiaryCompareView extends ItemView {
 			}
 		};
 
-		reloadBtn.addEventListener("click", () => {
+		this.registerDomEvent(reloadBtn, "click", () => {
 			renderTable();
 		});
 
@@ -516,14 +516,16 @@ class YearlyDiaryCompareView extends ItemView {
 				tableWrapper.scrollTop = scrollTop;
 			}
 		}, 0);
-		window.addEventListener("resize", renderTable);
+		this.registerDomEvent(window, "resize", renderTable);
 		this._renderTableHandler = renderTable;
 	}
 
 	async onClose() {
 		// Remove handler
 		if (this._renderTableHandler) {
-			window.removeEventListener("resize", this._renderTableHandler);
+			// registerDomEventを使用した場合、onunloadで自動的にクリーンアップされるため、
+			// ここでremoveEventListenerを呼び出す必要はありません。
+			// ただし、_renderTableHandlerがnullになるように設定は維持します。
 			this._renderTableHandler = null;
 		}
 		// Empty DOM
