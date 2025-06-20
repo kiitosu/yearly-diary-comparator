@@ -163,23 +163,13 @@ export default class YearlyDiaryComparatorPlugin extends Plugin {
 	> {
 		// Get folder dailyNote core plugin save notes
 		let dailyNoteFolder: string | undefined = undefined;
-		const dailyNotesPlugin = (this.app as any).plugins?.getPlugin?.(
-			"daily-notes"
-		);
+		const internalDailyNotes = (this.app as any).internalPlugins
+			?.plugins?.["daily-notes"];
 		if (
-			dailyNotesPlugin &&
-			typeof dailyNotesPlugin?.options?.folder === "string"
+			internalDailyNotes &&
+			internalDailyNotes?.instance?.options?.folder !== undefined
 		) {
-			dailyNoteFolder = dailyNotesPlugin.options.folder;
-		} else {
-			const internalDailyNotes = (this.app as any).internalPlugins
-				?.plugins?.["daily-notes"];
-			if (
-				internalDailyNotes &&
-				internalDailyNotes?.instance?.options?.folder !== undefined
-			) {
-				dailyNoteFolder = internalDailyNotes.instance.options.folder;
-			}
+			dailyNoteFolder = internalDailyNotes.instance.options.folder;
 		}
 
 		// Get files in specified folder
@@ -280,7 +270,6 @@ class YearlyDiaryCompareView extends ItemView {
 
 		// Define title of view
 		const titleWrapper = container.createEl("div", { cls: "title-wrapper" });
-
 		// Add reload button to title
 		const reloadBtn = titleWrapper.createEl("button", { cls: "reload-btn" });
 		reloadBtn.title = "Reload table";
