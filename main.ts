@@ -8,6 +8,7 @@ import {
 	Setting,
 	TFile,
 } from "obsidian";
+import { title } from "process";
 
 // Settings for my plugin
 interface YearlyDiaryComparatorSettings {
@@ -79,14 +80,16 @@ export default class YearlyDiaryComparatorPlugin extends Plugin {
 		const cssId = "yearly-diary-comparator-style";
 		const exist = document.getElementById(cssId);
 		if (!exist) {
-			fetch(cssPath)
-				.then((res) => res.text())
-				.then((css) => {
-					const style = document.createElement("style");
-					style.id = cssId;
-					style.textContent = css;
-					document.head.appendChild(style);
-				});
+			try {
+				const res = await fetch(cssPath);
+				const css = await res.text();
+				const style = document.head.createEl("style");
+				style.id = cssId;
+				style.textContent = css;
+				document.head.appendChild(style);
+			} catch (error) {
+				console.error("Failed to load styles.css:", error);
+			}
 		}
 
 		this.addSettingTab(new YearlyDiaryComparatorSettingTab(this.app, this));
@@ -163,23 +166,13 @@ export default class YearlyDiaryComparatorPlugin extends Plugin {
 	> {
 		// Get folder dailyNote core plugin save notes
 		let dailyNoteFolder: string | undefined = undefined;
-		const dailyNotesPlugin = (this.app as any).plugins?.getPlugin?.(
-			"daily-notes"
-		);
+		const internalDailyNotes = (this.app as any).internalPlugins
+			?.plugins?.["daily-notes"];
 		if (
-			dailyNotesPlugin &&
-			typeof dailyNotesPlugin?.options?.folder === "string"
+			internalDailyNotes &&
+			internalDailyNotes?.instance?.options?.folder !== undefined
 		) {
-			dailyNoteFolder = dailyNotesPlugin.options.folder;
-		} else {
-			const internalDailyNotes = (this.app as any).internalPlugins
-				?.plugins?.["daily-notes"];
-			if (
-				internalDailyNotes &&
-				internalDailyNotes?.instance?.options?.folder !== undefined
-			) {
-				dailyNoteFolder = internalDailyNotes.instance.options.folder;
-			}
+			dailyNoteFolder = internalDailyNotes.instance.options.folder;
 		}
 
 		// Get files in specified folder
@@ -279,15 +272,15 @@ class YearlyDiaryCompareView extends ItemView {
 		container.empty();
 
 		// Define title of view
-		const titleWrapper = container.createEl("div", { cls: "title-wrapper" });
-		titleWrapper.createEl("h2", {
-			text: "Yearly diary comparator",
-			cls: "title-h2",
-		});
+		const titleWrapper = container.createEl("div", { cls: "title-wrapper"});
+
+		// Add title
+		new Setting(titleWrapper).setName("Yearly diary comparator").setHeading();
+
 		// Add reload button to title
 		const reloadBtn = titleWrapper.createEl("button", { cls: "reload-btn" });
 		reloadBtn.title = "Reload table";
-		const iconSpan = document.createElement("span");
+		const iconSpan = reloadBtn.createSpan();
 		iconSpan.textContent = "⟳";
 		iconSpan.title = "reload table";
 		iconSpan.className = "reload-icon";
@@ -405,7 +398,7 @@ class YearlyDiaryCompareView extends ItemView {
 										(line) => headingRegex.test(line)
 									);
 									cell.empty();
-									const iconSpan = document.createElement("span");
+									const iconSpan = cell.createSpan();
 									iconSpan.textContent = "📄";
 									iconSpan.title = "open note";
 									iconSpan.className = "open-note-icon";
@@ -462,7 +455,7 @@ class YearlyDiaryCompareView extends ItemView {
 											);
 										} else {
 											const noneSpan =
-												document.createElement("span");
+												cell.createSpan();
 											cell.appendChild(noneSpan);
 										}
 									}
@@ -478,7 +471,7 @@ class YearlyDiaryCompareView extends ItemView {
 							cell.setText("(no file found)");
 						}
 						
-						cell.addEventListener("click", async () => {
+						this.registerDomEvent(cell, "click", async () => {
 							await this.showDailyNote(plugin.app, filePath);
 						});
 					} else {
@@ -490,13 +483,13 @@ class YearlyDiaryCompareView extends ItemView {
 			}
 		};
 
-		reloadBtn.addEventListener("click", () => {
+		this.registerDomEvent(reloadBtn, "click", () => {
 			renderTable();
 		});
 
 		renderTable();
 		// Automatically scroll so that the latest year appears on the right edge, and today is centered vertically (with delayed execution to ensure proper rendering).
-		setTimeout(() => {
+		window.setTimeout(() => {
 			// horizontal scroll to right end
 			tableWrapper.scrollLeft = tableWrapper.scrollWidth;
 
@@ -528,14 +521,16 @@ class YearlyDiaryCompareView extends ItemView {
 				tableWrapper.scrollTop = scrollTop;
 			}
 		}, 0);
-		window.addEventListener("resize", renderTable);
+		this.registerDomEvent(window, "resize", renderTable);
 		this._renderTableHandler = renderTable;
 	}
 
 	async onClose() {
 		// Remove handler
 		if (this._renderTableHandler) {
-			window.removeEventListener("resize", this._renderTableHandler);
+			// registerDomEventを使用した場合、onunloadで自動的にクリーンアップされるため、
+			// ここでremoveEventListenerを呼び出す必要はありません。
+			// ただし、_renderTableHandlerがnullになるように設定は維持します。
 			this._renderTableHandler = null;
 		}
 		// Empty DOM
