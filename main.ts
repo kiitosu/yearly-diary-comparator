@@ -83,7 +83,7 @@ export default class YearlyDiaryComparatorPlugin extends Plugin {
 				VIEW_TYPE_YEARLY_DIARY_COMPARE
 			);
 			if (leaves.length > 0) {
-				leaves[0].detach();
+				this.app.workspace.revealLeaf(leaves[0]);
 			} else {
 				this.activateView();
 			}
