@@ -272,13 +272,13 @@ class YearlyDiaryCompareView extends ItemView {
 		container.empty();
 
 		// Define title of view
-		const titleWrapper = container.createEl("div", { cls: "title-wrapper"});
+		const titleWrapper = container.createEl("div", { cls: "ydc-title-wrapper"});
 
 		// Add title
 		new Setting(titleWrapper).setName("Yearly diary comparator").setHeading();
 
 		// Add reload button to title
-		const reloadBtn = titleWrapper.createEl("button", { cls: "reload-btn" });
+		const reloadBtn = titleWrapper.createEl("button", { cls: "ydc-reload-btn" });
 		reloadBtn.title = "Reload table";
 		const iconSpan = reloadBtn.createSpan();
 		iconSpan.textContent = "⟳";
@@ -290,13 +290,13 @@ class YearlyDiaryCompareView extends ItemView {
 		const yearList = Object.keys(yearDiaryMap).sort();
 
 		// Wrap table with scrollable
-		const tableWrapper = container.createEl("div", { cls: "table-wrapper" });
+		const tableWrapper = container.createEl("div", { cls: "ydc-table-wrapper" });
 
 		const yearColCount = yearList.length;
 		const dayColWidth = 56;
 		const yearColWidth = this.plugin.settings.yearColWidth;
 		const minTableWidth = dayColWidth + yearColWidth * yearColCount;
-		const table = tableWrapper.createEl("table", { cls: "yearly-diary-table" });
+		const table = tableWrapper.createEl("table", { cls: "ydc-diary-table" });
 		table.style.minWidth = `${minTableWidth}px`;
 		const thead = table.createEl("thead");
 		const tbody = table.createEl("tbody");

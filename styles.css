@@ -1,5 +1,5 @@
 /* table base */
-.yearly-diary-table {
+.ydc-diary-table {
   border-collapse: collapse;
   table-layout: fixed;
   width: 100%;
@@ -63,7 +63,7 @@
 }
 
 /* scrollable */
-.table-wrapper {
+.ydc-table-wrapper {
   overflow-x: auto;
   overflow-y: auto;
   height: 100%;
@@ -71,7 +71,7 @@
 }
 
 /* title wrapper */
-.title-wrapper {
+.ydc-title-wrapper {
   display: flex;
   align-items: center;
   gap: 8px;
@@ -83,7 +83,7 @@
 }
 
 /* reload button */
-.reload-btn {
+.ydc-reload-btn {
   display: flex;
   align-items: center;
   justify-content: center;
@@ -97,14 +97,14 @@
 }
 
 /* reload icon */
-.reload-icon {
+.ydc-reload-icon {
   font-size: 2rem;
   cursor: pointer;
   margin-right: 4px;
 }
 
 /* open note icon */
-.open-note-icon {
+.ydc-open-note-icon {
   font-size: 1rem;
   cursor: pointer;
   margin-right: 4px;
