@@ -120,11 +120,10 @@ export default class YearlyDiaryComparatorPlugin extends Plugin {
 		}
 	}
 
-	onunload() {
-	}
+	onunload() {}
 
 	async loadSettings() {
-		this.settings = Object.assign(                      
+		this.settings = Object.assign(
 			{},
 			DEFAULT_SETTINGS,
 			await this.loadData()
@@ -137,14 +136,15 @@ export default class YearlyDiaryComparatorPlugin extends Plugin {
 
 	/**
 	 * function to get diary data
-	 */ 
+	 */
 	async getYearDiaryMap(): Promise<
 		Record<string, Record<string, string | undefined>>
 	> {
 		// Get folder dailyNote core plugin save notes
 		let dailyNoteFolder: string | undefined = undefined;
-		const internalDailyNotes = (this.app as any).internalPlugins
-			?.plugins?.["daily-notes"];
+		const internalDailyNotes = (this.app as any).internalPlugins?.plugins?.[
+			"daily-notes"
+		];
 		if (
 			internalDailyNotes &&
 			internalDailyNotes?.instance?.options?.folder !== undefined
@@ -249,13 +249,19 @@ class YearlyDiaryCompareView extends ItemView {
 		container.empty();
 
 		// Define title of view
-		const titleWrapper = container.createEl("div", { cls: "ydc-title-wrapper"});
+		const titleWrapper = container.createEl("div", {
+			cls: "ydc-title-wrapper",
+		});
 
 		// Add title
-		new Setting(titleWrapper).setName("Yearly diary comparator").setHeading();
+		new Setting(titleWrapper)
+			.setName("Yearly diary comparator")
+			.setHeading();
 
 		// Add reload button to title
-		const reloadBtn = titleWrapper.createEl("button", { cls: "ydc-reload-btn" });
+		const reloadBtn = titleWrapper.createEl("button", {
+			cls: "ydc-reload-btn",
+		});
 		reloadBtn.title = "Reload table";
 		const iconSpan = reloadBtn.createSpan();
 		iconSpan.textContent = "⟳";
@@ -267,13 +273,17 @@ class YearlyDiaryCompareView extends ItemView {
 		const yearList = Object.keys(yearDiaryMap).sort();
 
 		// Wrap table with scrollable
-		const tableWrapper = container.createEl("div", { cls: "ydc-table-wrapper" });
+		const tableWrapper = container.createEl("div", {
+			cls: "ydc-table-wrapper",
+		});
 
 		const yearColCount = yearList.length;
 		const dayColWidth = 56;
 		const yearColWidth = this.plugin.settings.yearColWidth;
 		const minTableWidth = dayColWidth + yearColWidth * yearColCount;
-		const table = tableWrapper.createEl("table", { cls: "ydc-diary-table" });
+		const table = tableWrapper.createEl("table", {
+			cls: "ydc-diary-table",
+		});
 		table.style.minWidth = `${minTableWidth}px`;
 		const thead = table.createEl("thead");
 		const tbody = table.createEl("tbody");
@@ -292,7 +302,6 @@ class YearlyDiaryCompareView extends ItemView {
 
 		const plugin = this.plugin;
 		const renderTable = () => {
-
 			thead.empty();
 			const headerRow = thead.createEl("tr");
 			headerRow.createEl("th", {
@@ -329,9 +338,8 @@ class YearlyDiaryCompareView extends ItemView {
 			// Create cell for 366 days
 			for (const mmdd of days) {
 				// 今日かどうかでクラスを分岐
-				const tdDayCls = mmdd === todayStr
-					? "td-day today-highlight"
-					: "td-day";
+				const tdDayCls =
+					mmdd === todayStr ? "td-day today-highlight" : "td-day";
 
 				// Create cells for years
 				const row = tbody.createEl("tr");
@@ -340,20 +348,21 @@ class YearlyDiaryCompareView extends ItemView {
 					// Define filepath
 					const dateStr = `${year}-${mmdd}`;
 					const filePath = yearDiaryMap[year][dateStr];
-					
+
 					// 常にセルを作成する
 					const cell = row.createEl("td", {
 						text: "",
 						cls: "td-year",
 					});
-					
+
 					if (filePath) {
 						// ファイルが存在する場合のみクリック可能にする
 						cell.addClass("clickable-diary-cell");
 						cell.setText("loading...");
 						cell.setAttr("title", "open note");
-						
-						const file = this.plugin.app.vault.getFileByPath(filePath);
+
+						const file =
+							this.plugin.app.vault.getFileByPath(filePath);
 						if (file) {
 							(async () => {
 								try {
@@ -431,8 +440,7 @@ class YearlyDiaryCompareView extends ItemView {
 												plugin
 											);
 										} else {
-											const noneSpan =
-												cell.createSpan();
+											const noneSpan = cell.createSpan();
 											cell.appendChild(noneSpan);
 										}
 									}
@@ -447,7 +455,7 @@ class YearlyDiaryCompareView extends ItemView {
 						} else {
 							cell.setText("(no file found)");
 						}
-						
+
 						this.registerDomEvent(cell, "click", async () => {
 							await this.showDailyNote(plugin.app, filePath);
 						});
