@@ -75,23 +75,6 @@ export default class YearlyDiaryComparatorPlugin extends Plugin {
 	async onload() {
 		await this.loadSettings();
 
-		// styles.cssをheadに追加
-		const cssPath = "styles.css";
-		const cssId = "yearly-diary-comparator-style";
-		const exist = document.getElementById(cssId);
-		if (!exist) {
-			try {
-				const res = await fetch(cssPath);
-				const css = await res.text();
-				const style = document.head.createEl("style");
-				style.id = cssId;
-				style.textContent = css;
-				document.head.appendChild(style);
-			} catch (error) {
-				console.error("Failed to load styles.css:", error);
-			}
-		}
-
 		this.addSettingTab(new YearlyDiaryComparatorSettingTab(this.app, this));
 
 		// add button to the ribbon
@@ -138,12 +121,6 @@ export default class YearlyDiaryComparatorPlugin extends Plugin {
 	}
 
 	onunload() {
-		// headからstyle要素を削除
-		const cssId = "yearly-diary-comparator-style";
-		const style = document.getElementById(cssId);
-		if (style) {
-			style.remove();
-		}
 	}
 
 	async loadSettings() {
